@@ -7,14 +7,17 @@ options
 PARSER_BEGIN(Yal2jvm)
 public class Yal2jvm
 {
+  public static final Logger LOGGER = new Logger(10);
+
   public static void main(String args [])
   {
-    System.out.println("Reading from standard input...");    new Yal2jvm(System.in);
+    System.out.println("Reading from standard input...");
+    new Yal2jvm(System.in);
     try
     {
       SimpleNode n = Yal2jvm.Start();
-      n.dump("");
-      System.out.println("Thank you.");
+      //n.dump("");
+      //System.out.println("Thank you.");
     }
     catch (Exception e)
     {
@@ -105,7 +108,7 @@ SimpleNode Start() :
   (
     < MODULE > < ID > < LCHAVETA >
     (
-      Declaration()
+      Ex_Declaration()
     )*
     (
       Function()
@@ -114,6 +117,19 @@ SimpleNode Start() :
   )
   {
     return jjtThis;
+  }
+}
+
+void Ex_Declaration() :
+{}
+{
+  try
+  {
+    Declaration()
+  }
+  catch (ParseException e)
+  {
+    error_skipto(PVIRG);
   }
 }
 
@@ -182,7 +198,7 @@ void Stmt() :
 {
   While()
 | If()
-// | Assign() | Call() <PVIRG>
+  // | Assign() | Call() <PVIRG>
 | StmtCallOrAssign()
 }
 
@@ -353,4 +369,26 @@ void Index() :
 {
   < ID >
 | < INTEGER >
+}
+
+JAVACODE 
+void error_skipto(int kind)
+{
+  ParseException e = generateParseException(); // generate the exception object.
+  System.out.println
+  (
+    e.toString()
+  )
+  ; // print the error message
+  Token t;
+  do
+  {
+    t = getNextToken();
+  }
+  while (t.kind != kind);
+  // The above loop consumes tokens all the way up to a token of
+  // "kind".  We use a do-while loop rather than a while because the
+  // current token is the one immediately before the erroneous token
+  // (in our case the token immediately before what should have been
+  // "if"/"while".
 }

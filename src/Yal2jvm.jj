@@ -11,14 +11,17 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants/*@egen*/
   protected static JJTYal2jvmState jjtree = new JJTYal2jvmState();
 
 /*@egen*/
+  public static final Logger LOGGER = new Logger(10);
+
   public static void main(String args [])
   {
-    System.out.println("Reading from standard input...");    new Yal2jvm(System.in);
+    System.out.println("Reading from standard input...");
+    new Yal2jvm(System.in);
     try
     {
       SimpleNode n = Yal2jvm.Start();
-      n.dump("");
-      System.out.println("Thank you.");
+      //n.dump("");
+      //System.out.println("Thank you.");
     }
     catch (Exception e)
     {
@@ -115,7 +118,7 @@ SimpleNode Start() :
   (
     < MODULE > < ID > < LCHAVETA >
     (
-      Declaration()
+      Ex_Declaration()
     )*
     (
       Function()
@@ -129,6 +132,45 @@ SimpleNode Start() :
 /*@egen*/
   {
     return jjtn000;
+  }/*@bgen(jjtree)*/
+  } catch (Throwable jjte000) {
+    if (jjtc000) {
+      jjtree.clearNodeScope(jjtn000);
+      jjtc000 = false;
+    } else {
+      jjtree.popNode();
+    }
+    if (jjte000 instanceof RuntimeException) {
+      throw (RuntimeException)jjte000;
+    }
+    if (jjte000 instanceof ParseException) {
+      throw (ParseException)jjte000;
+    }
+    throw (Error)jjte000;
+  } finally {
+    if (jjtc000) {
+      jjtree.closeNodeScope(jjtn000, true);
+    }
+  }
+/*@egen*/
+}
+
+void Ex_Declaration() :
+{/*@bgen(jjtree) Ex_Declaration */
+  SimpleNode jjtn000 = new SimpleNode(JJTEX_DECLARATION);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
+/*@egen*/}
+{/*@bgen(jjtree) Ex_Declaration */
+  try {
+/*@egen*/
+  try
+  {
+    Declaration()
+  }
+  catch (ParseException e)
+  {
+    error_skipto(PVIRG);
   }/*@bgen(jjtree)*/
   } catch (Throwable jjte000) {
     if (jjtc000) {
@@ -339,7 +381,7 @@ void Stmt() :
 /*@egen*/
   While()
 | If()
-// | Assign() | Call() <PVIRG>
+  // | Assign() | Call() <PVIRG>
 | StmtCallOrAssign()/*@bgen(jjtree)*/
   } catch (Throwable jjte000) {
     if (jjtc000) {
@@ -878,4 +920,37 @@ void Index() :
     }
   }
 /*@egen*/
+}
+
+JAVACODE 
+void error_skipto(int kind)
+{/*@bgen(jjtree) error_skipto */
+SimpleNode jjtn000 = new SimpleNode(JJTERROR_SKIPTO);
+boolean jjtc000 = true;
+jjtree.openNodeScope(jjtn000);
+try {
+/*@egen*/
+  ParseException e = generateParseException(); // generate the exception object.
+  System.out.println
+  (
+    e.toString()
+  )
+  ; // print the error message
+  Token t;
+  do
+  {
+    t = getNextToken();
+  }
+  while (t.kind != kind);/*@bgen(jjtree)*/
+} finally {
+  if (jjtc000) {
+    jjtree.closeNodeScope(jjtn000, true);
+  }
+}
+/*@egen*/
+  // The above loop consumes tokens all the way up to a token of
+  // "kind".  We use a do-while loop rather than a while because the
+  // current token is the one immediately before the erroneous token
+  // (in our case the token immediately before what should have been
+  // "if"/"while".
 }

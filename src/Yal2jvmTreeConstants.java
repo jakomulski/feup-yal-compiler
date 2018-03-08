@@ -2,31 +2,34 @@
 public interface Yal2jvmTreeConstants
 {
   public int JJTSTART = 0;
-  public int JJTDECLARATION = 1;
-  public int JJTFUNCTION = 2;
-  public int JJTVARLIST = 3;
-  public int JJTELEMENT = 4;
-  public int JJTSTMTLST = 5;
-  public int JJTSTMT = 6;
-  public int JJTSTMTCALLORASSIGN = 7;
-  public int JJTASSIGN = 8;
-  public int JJTRHS = 9;
-  public int JJTARRAYSIZE = 10;
-  public int JJTTERM = 11;
-  public int JJTCALLORACCESS = 12;
-  public int JJTEXPRTEST = 13;
-  public int JJTWHILE = 14;
-  public int JJTIF = 15;
-  public int JJTCALL = 16;
-  public int JJTARGUMENTLIST = 17;
-  public int JJTARGUMENT = 18;
-  public int JJTACCESS = 19;
-  public int JJTSCALARACCESS = 20;
-  public int JJTINDEX = 21;
+  public int JJTEX_DECLARATION = 1;
+  public int JJTDECLARATION = 2;
+  public int JJTFUNCTION = 3;
+  public int JJTVARLIST = 4;
+  public int JJTELEMENT = 5;
+  public int JJTSTMTLST = 6;
+  public int JJTSTMT = 7;
+  public int JJTSTMTCALLORASSIGN = 8;
+  public int JJTASSIGN = 9;
+  public int JJTRHS = 10;
+  public int JJTARRAYSIZE = 11;
+  public int JJTTERM = 12;
+  public int JJTCALLORACCESS = 13;
+  public int JJTEXPRTEST = 14;
+  public int JJTWHILE = 15;
+  public int JJTIF = 16;
+  public int JJTCALL = 17;
+  public int JJTARGUMENTLIST = 18;
+  public int JJTARGUMENT = 19;
+  public int JJTACCESS = 20;
+  public int JJTSCALARACCESS = 21;
+  public int JJTINDEX = 22;
+  public int JJTERROR_SKIPTO = 23;
 
 
   public String[] jjtNodeName = {
     "Start",
+    "Ex_Declaration",
     "Declaration",
     "Function",
     "Varlist",
@@ -48,6 +51,7 @@ public interface Yal2jvmTreeConstants
     "Access",
     "ScalarAccess",
     "Index",
+    "error_skipto",
   };
 }
-/* JavaCC - OriginalChecksum=228ae5405424ff3f0292ab59fbc76a28 (do not edit this line) */
+/* JavaCC - OriginalChecksum=b2b8b83e932fca6d46072083f20a0c76 (do not edit this line) */
