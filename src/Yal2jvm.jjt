@@ -1,0 +1,356 @@
+options
+{
+  static = true;
+  //LOOKAHEAD= 1;
+}
+
+PARSER_BEGIN(Yal2jvm)
+public class Yal2jvm
+{
+  public static void main(String args [])
+  {
+    System.out.println("Reading from standard input...");    new Yal2jvm(System.in);
+    try
+    {
+      SimpleNode n = Yal2jvm.Start();
+      n.dump("");
+      System.out.println("Thank you.");
+    }
+    catch (Exception e)
+    {
+      System.out.println("Oops.");
+      System.out.println(e.getMessage());
+    }
+  }
+}
+
+PARSER_END(Yal2jvm)
+
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+| < "//" (~[ "\n", "\r" ])*
+    (
+      "\n"
+    | "\r"
+    | "\r\n"
+    ) >
+| < "/*" (~[ "*" ])* "*"
+    (
+      "*"
+    | ~[ "*", "/" ] (~[ "*" ])* "*"
+    )*
+    "/" >
+}
+
+TOKEN : /* LITERALS */
+{
+  < RELA_OP :
+    ">"
+  | "<"
+  | "<="
+  | ">="
+  | "=="
+  | "!=" >
+| < ADDSUB_OP :
+    "+"
+  | "-" >
+| < ARITH_OP :
+    "*"
+  | "/"
+  | "<<"
+  | ">>"
+  | ">>>" >
+| < BITWISE_OP :
+    "&"
+  | "|"
+  | "^" >
+| < NOT_OP : "!" >
+| < WHILE : "while" >
+| < IF : "if" >
+| < ELSE : "else" >
+| < ASSIGN : "=" >
+| < ASPA : "\"" >
+| < LPAR : "(" >
+| < RPAR : ")" >
+| < VIRG : "," >
+| < PVIRG : ";" >
+| < LCHAVETA : "{" >
+| < RCHAVETA : "}" >
+| < FUNCTION : "function" >
+| < MODULE : "module" >
+| < SIZE : "size" >
+}
+
+TOKEN : /* IDENTIFIERS */
+{
+  < INTEGER : (< DIGIT >)+ >
+| < ID :
+    < LETTER >
+    (
+      < LETTER >
+    | < DIGIT >
+    )* >
+| < #LETTER : [ "$", "A"-"Z", "_", "a"-"z" ] >
+| < #DIGIT : [ "0"-"9" ] >
+| < STRING : "\"" ([ "a"-"z", "A"-"Z", "0"-"9", ":", " ", "=" ])+ "\"" >
+}
+
+SimpleNode Start() :
+{}
+{
+  (
+    < MODULE > < ID > < LCHAVETA >
+    (
+      Declaration()
+    )*
+    (
+      Function()
+    )*
+    < RCHAVETA >
+  )
+  {
+    return jjtThis;
+  }
+}
+
+void Declaration() :
+{}
+{
+  (
+    Element()
+  )
+  (
+    < ASSIGN >
+    (
+      (
+        "[" ArraySize() "]"
+      )
+    | (< ADDSUB_OP >)? < INTEGER >
+    )
+  )?
+  < PVIRG >
+}
+
+void Function() :
+{}
+{
+  < FUNCTION > 
+  < ID >
+  (
+    ("[" "]")? //Element 
+    < ASSIGN > 
+    < ID >
+  )?
+  < LPAR >
+  (
+    Varlist()
+  )?
+  < RPAR > 
+  < LCHAVETA > Stmtlst() < RCHAVETA >
+}
+
+void Varlist() :
+{}
+{
+  Element()
+  (
+    < VIRG > 
+    Element()
+  )*
+}
+
+void Element() : //Array or scalar element
+{}
+{
+  < ID > ("[" "]")?
+}
+
+void Stmtlst() :
+{}
+{
+  (
+    Stmt()
+  )*
+}
+
+void Stmt() :
+{}
+{
+  While()
+| If()
+// | Assign() | Call() <PVIRG>
+| StmtCallOrAssign()
+}
+
+void StmtCallOrAssign() :
+{}
+{
+  < ID >
+  (
+    (
+      "[" Index() "]"
+    )?
+    < ASSIGN > Rhs() < PVIRG > //Assign
+  | 
+    "."
+    (
+      (
+        < SIZE > < ASSIGN > Rhs() < PVIRG > //Assign
+      | 
+        < ID > < LPAR >
+        (
+          ArgumentList()
+        )?
+        < RPAR > < PVIRG > //Call
+      )
+    )
+  | 
+    < LPAR >
+    (
+      ArgumentList()
+    )?
+    < RPAR > < PVIRG >
+  ) //Call
+}
+
+void Assign() :
+{}
+{
+  Access() < ASSIGN > Rhs() < PVIRG >
+}
+
+void Rhs() :
+{}
+{
+  (
+    Term()
+    (
+      (
+        < ARITH_OP >
+      | < BITWISE_OP >
+      | < ADDSUB_OP >
+      )
+      Term()
+    )?
+  )
+| "[" ArraySize() "]"
+}
+
+void ArraySize() :
+{}
+{
+  ScalarAccess()
+| < INTEGER >
+}
+
+void Term() :
+{}
+{
+  (< ADDSUB_OP >)?
+  (
+    < INTEGER >
+    //| Call() | Access()
+  | CallOrAccess()
+  )
+}
+
+void CallOrAccess() :
+{}
+{
+  < ID >
+  (
+    < LPAR >
+    (
+      ArgumentList()
+    )?
+    < RPAR >
+  | "."
+    (
+      < ID > < LPAR >
+      (
+        ArgumentList()
+      )?
+      < RPAR >
+    | < SIZE >
+    )
+  | "[" Index() "]"
+  )?
+}
+
+void Exprtest() :
+{}
+{
+  < LPAR > Access() < RELA_OP > Rhs() < RPAR >
+}
+
+void While() :
+{}
+{
+  < WHILE > Exprtest() < LCHAVETA > Stmtlst() < RCHAVETA >
+}
+
+void If() :
+{}
+{
+  < IF > Exprtest() < LCHAVETA > Stmtlst() < RCHAVETA >
+  (
+    < ELSE > < LCHAVETA > 
+    Stmtlst() < RCHAVETA >
+  )?
+}
+
+void Call() :
+{}
+{
+  < ID > ("." < ID >)? < LPAR >
+  (
+    ArgumentList()
+  )?
+  < RPAR >
+}
+
+void ArgumentList() :
+{}
+{
+  Argument()
+  (
+    < VIRG > Argument()
+  )*
+}
+
+void Argument() :
+{}
+{
+  (
+    < ID >
+  | < STRING >
+  | < INTEGER >
+  )
+}
+
+void Access() : //Array or scalar access
+{}
+{
+  < ID >
+  (
+    "." < SIZE >
+  | "[" Index() "]"
+  )?
+}
+
+void ScalarAccess() :
+{}
+{
+  < ID > ("." < SIZE >)?
+}
+
+void Index() :
+{}
+{
+  < ID >
+| < INTEGER >
+}
