@@ -19,7 +19,8 @@ public class Yal2jvm
       //n.dump("");
       //System.out.println("Thank you.");
     }
-    catch (Exception e)
+   
+	catch (Exception e)
     {
       System.out.println("Oops.");
       System.out.println(e.getMessage());
@@ -129,6 +130,7 @@ void Ex_Declaration() :
   }
   catch (ParseException e)
   {
+    LOGGER.error(e);
     error_skipto(PVIRG);
   }
 }
@@ -148,7 +150,21 @@ void Declaration() :
     | (< ADDSUB_OP >)? < INTEGER >
     )
   )?
-  < PVIRG >
+  < PVIRG > 
+}
+
+void Ex_Function() :
+{}
+{
+  try
+  {
+    Function()
+  }
+  catch (ParseException e)
+  {
+    LOGGER.error(e);
+    error_skipto(RCHAVETA);
+  }
 }
 
 void Function() :
@@ -202,11 +218,26 @@ void Stmt() :
 | StmtCallOrAssign()
 }
 
+void Ex_StmtCallOrAssign() :
+{}
+{
+  try
+  {
+    StmtCallOrAssign()
+  }
+  catch (ParseException e)
+  {
+    LOGGER.error(e);
+    error_skipto(PVIRG);
+  }
+}
+
 void StmtCallOrAssign() :
 {}
 {
   < ID >
   (
+    
     (
       "[" Index() "]"
     )?
@@ -232,6 +263,21 @@ void StmtCallOrAssign() :
     < RPAR > < PVIRG >
   ) //Call
 }
+
+void Ex_Assign() :
+{}
+{
+  try
+  {
+    Assign()
+  }
+  catch (ParseException e)
+  {
+    LOGGER.error(e);
+    error_skipto(PVIRG);
+  }
+}
+
 
 void Assign() :
 {}
@@ -297,16 +343,59 @@ void CallOrAccess() :
   )?
 }
 
+void Ex_Exprtest() :
+{}
+{
+  try
+  {
+    Exprtest()
+  }
+  catch (ParseException e)
+  {
+    LOGGER.error(e);
+    error_skipto(RPAR);
+  }
+}
+
 void Exprtest() :
 {}
 {
   < LPAR > Access() < RELA_OP > Rhs() < RPAR >
 }
 
+void Ex_While() :
+{}
+{
+  try
+  {
+    While()
+  }
+  catch (ParseException e)
+  {
+    LOGGER.error(e);
+    error_skipto(RCHAVETA);
+  }
+}
+
+
 void While() :
 {}
 {
   < WHILE > Exprtest() < LCHAVETA > Stmtlst() < RCHAVETA >
+}
+
+void Ex_If() :
+{}
+{
+  try
+  {
+    If()
+  }
+  catch (ParseException e)
+  {
+    LOGGER.error(e);
+    error_skipto(RCHAVETA);
+  }
 }
 
 void If() :
@@ -317,6 +406,20 @@ void If() :
     < ELSE > < LCHAVETA > 
     Stmtlst() < RCHAVETA >
   )?
+}
+
+void Ex_Call() :
+{}
+{
+  try
+  {
+    Call()
+  }
+  catch (ParseException e)
+  {
+    LOGGER.error(e);
+    error_skipto(RPAR);
+  }
 }
 
 void Call() :
@@ -336,6 +439,20 @@ void ArgumentList() :
   (
     < VIRG > Argument()
   )*
+}
+
+void Ex_Argument() :
+{}
+{
+  try
+  {
+    Argument()
+  }
+  catch (ParseException e)
+  {
+    LOGGER.error(e);
+    error_skipto(INTEGER);
+  }
 }
 
 void Argument() :
@@ -364,6 +481,20 @@ void ScalarAccess() :
   < ID > ("." < SIZE >)?
 }
 
+void Ex_Index() :
+{}
+{
+  try
+  {
+    Index()
+  }
+  catch (ParseException e)
+  {
+    LOGGER.error(e);
+    error_skipto(INTEGER);
+  }
+}
+
 void Index() :
 {}
 {
@@ -379,7 +510,7 @@ void error_skipto(int kind)
   (
     e.toString()
   )
-  ; // print the error message
+  ; // print the error message -- over here errors should get written into log
   Token t;
   do
   {
