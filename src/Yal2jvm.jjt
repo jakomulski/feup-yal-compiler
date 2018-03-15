@@ -1,30 +1,18 @@
 options
 {
-  static = true;
-  //LOOKAHEAD= 1;
+  LOOKAHEAD= 1;
+
+  MULTI = true;
+  JJTREE_OUTPUT_DIRECTORY = "yal2jvm";
 }
 
 PARSER_BEGIN(Yal2jvm)
+package yal2jvm;
+import custom.Logger;
+
 public class Yal2jvm
 {
-  public static final Logger LOGGER = new Logger(10);
-
-  public static void main(String args [])
-  {
-    System.out.println("Reading from standard input...");
-    new Yal2jvm(System.in);
-    try
-    {
-      SimpleNode n = Yal2jvm.Start();
-      //n.dump("");
-      //System.out.println("Thank you.");
-    }
-    catch (Exception e)
-    {
-      System.out.println("Oops.");
-      System.out.println(e.getMessage());
-    }
-  }
+  static final Logger LOGGER = Logger.INSTANCE;
 }
 
 PARSER_END(Yal2jvm)
@@ -102,90 +90,142 @@ TOKEN : /* IDENTIFIERS */
 | < STRING : "\"" ([ "a"-"z", "A"-"Z", "0"-"9", ":", " ", "=" ])+ "\"" >
 }
 
-SimpleNode Start() :
+ASTModule Start() #Module :
 {}
 {
+  < MODULE > jjtThis.jjtToken = < ID > < LCHAVETA >
   (
-    < MODULE > < ID > < LCHAVETA >
-    (
-      Ex_Declaration()
-    )*
-    (
-      Function()
-    )*
-    < RCHAVETA >
-  )
+    Declaration()
+  )*
+  (
+    Function()
+  )*
+  < RCHAVETA > < EOF >
   {
     return jjtThis;
   }
 }
 
-void Ex_Declaration() :
-{}
+void Declaration() #void :
 {
-  try
-  {
-    Declaration()
-  }
-  catch (ParseException e)
-  {
-    error_skipto(PVIRG);
-  }
+  SimpleNode element;
 }
-
-void Declaration() :
-{}
-{
-  (
-    Element()
-  )
-  (
-    < ASSIGN >
-    (
-      (
-        "[" ArraySize() "]"
-      )
-    | (< ADDSUB_OP >)? < INTEGER >
-    )
-  )?
-  < PVIRG >
-}
-
-void Function() :
-{}
-{
-  < FUNCTION > 
-  < ID >
-  (
-    ("[" "]")? //Element 
-    < ASSIGN > 
-    < ID >
-  )?
-  < LPAR >
-  (
-    Varlist()
-  )?
-  < RPAR > 
-  < LCHAVETA > Stmtlst() < RCHAVETA >
-}
-
-void Varlist() :
-{}
 {
   Element()
   (
-    < VIRG > 
-    Element()
-  )*
+    < ASSIGN >
+    (
+      Array() #Array
+    | Integer()
+  ) #Assign(2)
+)?
+< PVIRG >
 }
 
-void Element() : //Array or scalar element
+void Integer() :
+{
+  Token signToken;
+  String sign = "";
+  Token valueToken;
+}
+{
+  (signToken = < ADDSUB_OP >
+  {
+    sign = signToken.image;
+  }
+  )? valueToken = < INTEGER >
+  {
+  //jjtThis.value = sign + valueToken.image;
+  }
+}
+
+void Array() #void :
 {}
 {
-  < ID > ("[" "]")?
+  "[" ArraySize() "]"
 }
 
-void Stmtlst() :
+void ArraySize() #void :
+{}
+{
+  ScalarAccess()
+| jjtThis.jjtToken = < INTEGER > #Integer
+}
+
+void Function() :
+{
+  ASTArrayVariable aVar;
+  Token functionId;
+  boolean returnValueIsAnArray = false;
+}
+{
+  < FUNCTION >
+  functionId = < ID >
+  (
+    [
+      "[" "]"
+      {
+        aVar = jjtThis;
+        returnValueIsAnArray = true;
+        {
+          jjtThis.name = functionId.image;
+        }	
+      }
+      #ArrayVariable
+    ]
+    (< ASSIGN >
+    {
+      jjtThis.name = functionId.image;
+    }
+    functionId = < ID >
+  ) 
+  #ScalarVariable(!returnValueIsAnArray)
+)?
+#Return 
+Parameters()
+< LCHAVETA > Stmtlst() < RCHAVETA >
+{
+  jjtThis.name = functionId.image;
+}
+
+}
+
+void Parameters() :
+{}
+{
+  < LPAR >
+  [
+    Element()
+    (
+      < VIRG > 
+      Element()
+    )*
+  ]
+  < RPAR >
+}
+
+void Element() #void : //Array or scalar element
+{
+  Token tokenId;
+  boolean isNotArray = true;
+}
+{
+  tokenId = < ID > ("[" "]"
+  {
+    jjtThis.name = tokenId.image;
+  }
+  #ArrayVariable
+  {
+    isNotArray = false;
+  }
+  )?
+  {
+    jjtThis.name = tokenId.image;
+  }
+  #ScalarVariable(isNotArray)
+}
+
+void Stmtlst() #Statements :
 {}
 {
   (
@@ -193,114 +233,146 @@ void Stmtlst() :
   )*
 }
 
-void Stmt() :
+void Stmt() #void :
 {}
 {
   While()
 | If()
-  // | Assign() | Call() <PVIRG>
+  //| Assign()
+  //| Call() < PVIRG >
 | StmtCallOrAssign()
 }
 
-void StmtCallOrAssign() :
-{}
+//a.size = 20; // what is the semantic of this? - I am removing it from grammar!!
+void StmtCallOrAssign() #void :
 {
-  < ID >
+  Token id;
+  Token module;
+  boolean isNotAnArray = true;
+  boolean isNotInModule = true;
+  SimpleNode node;
+}
+{
+  (id = < ID >)
   (
     (
-      "[" Index() "]"
-    )?
-    < ASSIGN > Rhs() < PVIRG > //Assign
-  | 
-    "."
-    (
-      (
-        < SIZE > < ASSIGN > Rhs() < PVIRG > //Assign
-      | 
-        < ID > < LPAR >
-        (
-          ArgumentList()
-        )?
-        < RPAR > < PVIRG > //Call
-      )
-    )
-  | 
-    < LPAR >
-    (
-      ArgumentList()
-    )?
-    < RPAR > < PVIRG >
-  ) //Call
+      Index() { jjtThis.name = id.image; } #ArrayAccess(1)
+    {
+      isNotAnArray = false;
+    }
+  )?
+  {
+    jjtThis.name = id.image;
+  }
+  #Variable(isNotAnArray)
+< ASSIGN > Rhs() #Assign(2)
+|
+(
+  "."
+  {
+    node = jjtThis;
+  }
+  #Variable module = < ID >
+  {
+    node.jjtToken = module;
+    jjtThis.jjtToken = id;
+  }
+  #Module(1)
+{
+  isNotInModule = false;
 }
 
-void Assign() :
+)?
+{
+  jjtThis.jjtToken = id;
+}
+
+#Variable(isNotInModule)
+ArgumentList() #Call(2)
+)
+< PVIRG >
+}
+
+void Assign() #void :
 {}
 {
   Access() < ASSIGN > Rhs() < PVIRG >
 }
 
-void Rhs() :
-{}
+void Rhs() #void :
 {
-  (
+  Token operator;
+}
+{
+  (	
     Term()
     (
       (
-        < ARITH_OP >
-      | < BITWISE_OP >
-      | < ADDSUB_OP >
+        operator = < ARITH_OP >
+      | operator = < BITWISE_OP >
+      | operator = < ADDSUB_OP >
       )
       Term()
-    )?
-  )
-| "[" ArraySize() "]"
+      {
+        jjtThis.jjtToken = operator;
+      }
+      #Operator(2)
+  )?
+)
+| Array() #Array(1)
 }
 
-void ArraySize() :
+void Term() #void :
 {}
 {
-  ScalarAccess()
-| < INTEGER >
-}
-
-void Term() :
-{}
-{
-  (< ADDSUB_OP >)?
+  (< ADDSUB_OP >
+  )?
   (
-    < INTEGER >
+    jjtThis.jjtToken = < INTEGER > #Integer
     //| Call() | Access()
   | CallOrAccess()
-  )
+)
 }
 
-void CallOrAccess() :
-{}
+void CallOrAccess() #void :
 {
-  < ID >
+  SimpleNode thisNode;
+  Token module;
+  Token idToken;
+}
+{
   (
-    < LPAR >
+    (idToken = < ID >
+    {
+      jjtThis.jjtToken = idToken;
+      jjtThis.name = jjtThis.jjtToken.image; 
+      thisNode = jjtThis;
+    }
+    ) #Variable)
+  (
+    ArgumentList() #Call(2)
+| "."
+  (
     (
-      ArgumentList()
-    )?
-    < RPAR >
-  | "."
-    (
-      < ID > < LPAR >
-      (
-        ArgumentList()
-      )?
-      < RPAR >
-    | < SIZE >
-    )
-  | "[" Index() "]"
-  )?
+      (module = < ID >
+      {
+        jjtThis.jjtToken = thisNode.jjtToken;
+        thisNode.jjtToken = module;
+      }
+      ) #Module(1)
+  )
+  ArgumentList() #Call(2)
+| < SIZE > #Sizeof(1)
+)
+| (Index() {jjtThis.name = idToken.image; } #ArrayAccess(1))
+)?
 }
 
-void Exprtest() :
+void Exprtest() #Condition(2) :
 {}
 {
-  < LPAR > Access() < RELA_OP > Rhs() < RPAR >
+  < LPAR >
+  Access() < RELA_OP > Rhs() < RPAR >
 }
 
 void While() :
@@ -310,7 +382,8 @@ void While() :
 }
 
 void If() :
-{}
+{
+  }
 {
   < IF > Exprtest() < LCHAVETA > Stmtlst() < RCHAVETA >
   (
@@ -319,76 +392,100 @@ void If() :
   )?
 }
 
-void Call() :
+void Call() #void :
 {}
 {
-  < ID > ("." < ID >)? < LPAR >
-  (
-    ArgumentList()
-  )?
-  < RPAR >
+  < ID > ("." < ID >)? 
+  ArgumentList()
 }
 
 void ArgumentList() :
 {}
 {
-  Argument()
-  (
-    < VIRG > Argument()
-  )*
+  < LPAR >
+  [
+    Argument()
+    (
+      < VIRG > Argument()
+    )*
+  ]
+  < RPAR >
 }
 
-void Argument() :
+void Argument() #void :
 {}
 {
   (
-    < ID >
-  | < STRING >
-  | < INTEGER >
+    jjtThis.jjtToken = < ID > #Variable
+  | jjtThis.jjtToken = < STRING > #String
+  | jjtThis.jjtToken = < INTEGER > #Integer
   )
 }
 
-void Access() : //Array or scalar access
-{}
+void Access() #void : //Array or scalar access
 {
-  < ID >
+  Token idToken;
+  boolean isAnId = true;
+}
+{
+  idToken = < ID >
   (
-    "." < SIZE >
-  | "[" Index() "]"
-  )?
+    {
+      isAnId = false;
+    }
+    "." {jjtThis.name = idToken.image; }#Variable < SIZE > #Sizeof(1)
+| Index() { jjtThis.name = idToken.image; } #ArrayAccess(1)
+)?
+{jjtThis.name = idToken.image;}#Variable(isAnId)
 }
 
-void ScalarAccess() :
-{}
+void ScalarAccess() #void :
 {
-  < ID > ("." < SIZE >)?
+  Token idToken;
+}
+{
+  (idToken = < ID >
+  {
+    jjtThis.name = idToken.image;
+  }
+  #Variable) 
+  [ 
+  "." < SIZE > #Sizeof(1)
+]
 }
 
-void Index() :
+void Index():
 {}
 {
-  < ID >
-| < INTEGER >
+  "["
+  (
+    jjtThis.jjtToken = < ID >
+  | jjtThis.jjtToken = < INTEGER >
+  )
+  "]"
+}
+
+void Ex_Declaration() #void :
+{}
+{
+  try
+  {
+    Declaration()
+  }
+  catch (ParseException e)
+  {
+    LOGGER.error(e);
+    error_skipto(PVIRG);
+  }
 }
 
 JAVACODE 
 void error_skipto(int kind)
 {
-  ParseException e = generateParseException(); // generate the exception object.
-  System.out.println
-  (
-    e.toString()
-  )
-  ; // print the error message
   Token t;
   do
   {
     t = getNextToken();
   }
   while (t.kind != kind);
-  // The above loop consumes tokens all the way up to a token of
-  // "kind".  We use a do-while loop rather than a while because the
-  // current token is the one immediately before the erroneous token
-  // (in our case the token immediately before what should have been
-  // "if"/"while".
 }
