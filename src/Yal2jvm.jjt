@@ -5,19 +5,27 @@ options
 }
 
 PARSER_BEGIN(Yal2jvm)
+import java.io.*;
+import java.nio.charset.Charset;
+
 public class Yal2jvm
 {
   public static final Logger LOGGER = new Logger(10);
 
-  public static void main(String args [])
-  {
+  public static void main(String args []) throws IOException{
+    if(args.length == 1) {
+		File initialFile = new File(args[0]);
+    	InputStream is = new FileInputStream(initialFile);
+     	new Yal2jvm(is);
+		}
+      
+	else {
     System.out.println("Reading from standard input...");
-    new Yal2jvm(System.in);
+    new Yal2jvm(System.in); }
+  
     try
     {
       SimpleNode n = Yal2jvm.Start();
-      //n.dump("");
-      //System.out.println("Thank you.");
     }
    
 	catch (Exception e)
