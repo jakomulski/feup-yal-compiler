@@ -30,7 +30,7 @@ public class Yal2jvm
    
 	catch (Exception e)
     {
-      System.out.println("Oops.");
+      System.out.println("Oops."); //o problema está aqui
       System.out.println(e.getMessage());
     }
   }
