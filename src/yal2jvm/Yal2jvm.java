@@ -24,7 +24,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
           jj_la1[0] = jj_gen;
           break label_1;
         }
-        Declaration();
+        Ex_Declaration();
       }
       label_2:
       while (true) {
@@ -914,8 +914,13 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
     try {
-      jj_consume_token(IF);
-      Exprtest();
+      try {
+        jj_consume_token(IF);
+        Exprtest();
+      } catch (ParseException e) {
+    LOGGER.error(e);
+    error_skipto(LCHAVETA);
+      }
       jj_consume_token(LCHAVETA);
       Stmtlst();
       jj_consume_token(RCHAVETA);

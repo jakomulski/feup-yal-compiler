@@ -95,7 +95,7 @@ ASTModule Start() #Module :
 {
   < MODULE > jjtThis.jjtToken = < ID > < LCHAVETA >
   (
-    Declaration()
+    Ex_Declaration()
   )*
   (
     Function()
@@ -385,7 +385,16 @@ void If() :
 {
   }
 {
-  < IF > Exprtest() < LCHAVETA > Stmtlst() < RCHAVETA >
+  
+  try { 
+  < IF > Exprtest()
+  }
+	catch (ParseException e)
+  {
+    LOGGER.error(e);
+    error_skipto(LCHAVETA);
+  }
+  < LCHAVETA > Stmtlst() < RCHAVETA >
   (
     < ELSE > < LCHAVETA > 
     Stmtlst() < RCHAVETA >

@@ -105,7 +105,7 @@ ASTModule Start()         :
 /*@egen*/
   < MODULE > jjtn000.jjtToken = < ID > < LCHAVETA >
   (
-    Declaration()
+    Ex_Declaration()
   )*
   (
     Function()
@@ -1048,7 +1048,16 @@ void If() :
 {/*@bgen(jjtree) If */
   try {
 /*@egen*/
-  < IF > Exprtest() < LCHAVETA > Stmtlst() < RCHAVETA >
+  
+  try { 
+  < IF > Exprtest()
+  }
+	catch (ParseException e)
+  {
+    LOGGER.error(e);
+    error_skipto(LCHAVETA);
+  }
+  < LCHAVETA > Stmtlst() < RCHAVETA >
   (
     < ELSE > < LCHAVETA > 
     Stmtlst() < RCHAVETA >

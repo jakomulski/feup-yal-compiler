@@ -1,3 +1,4 @@
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,14 +12,16 @@ import yal2jvm.Yal2jvmTreeConstants;
 
 public class Main {
 	public static final Logger LOGGER = Logger.INSTANCE;
-
-	public static void main(String[] args) throws ParseException {
+	
+	public static void main(String[] args) throws ParseException, FileNotFoundException {
+		//LOGGER.info(args[0]);
 		LOGGER.info("Reading from standard input...");
-		new Yal2jvm(System.in);
+		new Yal2jvm(new java.io.FileInputStream(args[0]));
 		// try {
 		ASTModule module = Yal2jvm.Start();
 		module.dump("");
 		//module.init();
+		//module.dump(" | ");
 		LOGGER.info("---");
 		LOGGER.info("---");
 	}
