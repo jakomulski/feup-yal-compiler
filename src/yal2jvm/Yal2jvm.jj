@@ -24,7 +24,7 @@ PARSER_END(Yal2jvm)
 
 SKIP :
 {
-  " "
+  " "  
 | "\t"
 | "\n"
 | "\r"
