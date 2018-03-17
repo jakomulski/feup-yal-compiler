@@ -1,0 +1,609 @@
+options
+{
+  LOOKAHEAD= 1;
+
+  MULTI = true;
+  JJTREE_OUTPUT_DIRECTORY = "yal2jvm";
+}
+
+PARSER_BEGIN(Yal2jvm)
+package yal2jvm;
+import custom.Logger;
+
+
+public class Yal2jvm
+{
+  static final Logger LOGGER = Logger.INSTANCE;
+} 
+ 
+PARSER_END(Yal2jvm)
+
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+| < "//" (~[ "\n", "\r" ])*
+    (
+      "\n"
+    | "\r"
+    | "\r\n"
+    ) >
+| < "/*" (~[ "*" ])* "*"
+    (
+      "*"
+    | ~[ "*", "/" ] (~[ "*" ])* "*"
+    )*
+    "/" >
+}
+
+TOKEN : /* LITERALS */
+{
+  < RELA_OP :
+    ">"
+  | "<"
+  | "<="
+  | ">="
+  | "=="
+  | "!=" >
+| < ADDSUB_OP :
+    "+"
+  | "-" >
+| < ARITH_OP :
+    "*"
+  | "/"
+  | "<<"
+  | ">>"
+  | ">>>" >
+| < BITWISE_OP :
+    "&"
+  | "|"
+  | "^" >
+| < NOT_OP : "!" >
+| < WHILE : "while" >
+| < IF : "if" >
+| < ELSE : "else" >
+| < ASSIGN : "=" >
+| < ASPA : "\"" >
+| < LPAR : "(" >
+| < RPAR : ")" >
+| < VIRG : "," >
+| < PVIRG : ";" >
+| < LCHAVETA : "{" >
+| < RCHAVETA : "}" >
+| < FUNCTION : "function" >
+| < MODULE : "module" >
+| < SIZE : "size" >
+}
+
+TOKEN : /* IDENTIFIERS */
+{
+  < INTEGER : (< DIGIT >)+ >
+| < ID :
+    < LETTER >
+    (
+      < LETTER >
+    | < DIGIT >
+    )* >
+| < #LETTER : [ "$", "A"-"Z", "_", "a"-"z" ] >
+| < #DIGIT : [ "0"-"9" ] >
+| < STRING : "\"" ([ "a"-"z", "A"-"Z", "0"-"9", ":", " ", "=" ])+ "\"" >
+}
+
+ASTModule Start() #Module :
+{}
+{
+  < MODULE > jjtThis.jjtToken = < ID > < LCHAVETA >
+  (
+    try
+    {
+      Declaration()
+    }
+    catch (ParseException e)
+    {
+      LOGGER.error(e);
+      error_skipto(PVIRG);
+    }
+  )*
+  (
+    try
+    {
+      Function()
+    }
+    catch (ParseException e)
+    {
+      LOGGER.error(e);
+      error_skipto(PVIRG);
+    }
+  )*
+  try
+  {
+    < RCHAVETA > 
+    < EOF >
+  }
+  catch (ParseException e)
+  {
+    LOGGER.error(e);
+    error_skipto(EOF);
+  }
+  {
+    return jjtThis;
+  }
+}
+
+void Declaration() #void :
+{
+  SimpleNode element;
+}
+{
+  Element()
+  (
+    < ASSIGN >
+    (
+      Array() #Array
+    | Integer()
+  ) #Assign(2)
+)?
+< PVIRG >
+}
+
+void Integer() :
+{
+  Token signToken;
+  String sign = "";
+  Token valueToken;
+}
+{
+  (signToken = < ADDSUB_OP >
+  {
+    sign = signToken.image;
+  }
+  )? valueToken = < INTEGER >
+  {
+  //jjtThis.value = sign + valueToken.image;
+  }
+}
+
+void Array() #void :
+{}
+{
+  "[" ArraySize() "]"
+}
+
+void ArraySize() #void :
+{}
+{
+  ScalarAccess()
+| jjtThis.jjtToken = < INTEGER > #Integer
+}
+
+void Function() :
+{
+  ASTArrayVariable aVar;
+  Token functionId = null;
+  boolean returnValueIsAnArray = false;
+}
+{
+  try
+  {
+    < FUNCTION >
+    functionId = < ID > 
+    (
+    [
+      "[" "]"
+      {
+        aVar = jjtThis;
+        returnValueIsAnArray = true;
+        {
+          jjtThis.name = functionId.image;
+        }	
+      }
+      #ArrayVariable
+    ]
+    (< ASSIGN >
+    {
+      jjtThis.name = functionId.image;
+    }
+    functionId = < ID >
+    ) 
+    #ScalarVariable(!returnValueIsAnArray)
+    ) ? 
+    #Return Parameters() < LCHAVETA >
+  }
+  catch (ParseException e)
+  {
+    LOGGER.error(e);
+    error_skipto(LCHAVETA);
+  }
+  try
+  {
+    Stmtlst()
+  }
+  catch (ParseException e)
+  {
+    LOGGER.error(e);
+    error_skipto(RCHAVETA);
+  }
+  < RCHAVETA >
+  {
+    jjtThis.name = functionId.image;
+  }
+}
+
+void Parameters() :
+{}
+{
+  < LPAR >
+  [
+    Element()
+    (
+      < VIRG > 
+      Element()
+    )*
+  ]
+  < RPAR >
+}
+
+void Element() #void : //Array or scalar element
+{
+  Token tokenId;
+  boolean isNotArray = true;
+}
+{
+  tokenId = < ID > ("[" "]"
+  {
+    jjtThis.name = tokenId.image;
+  }
+  #ArrayVariable
+  { 
+    isNotArray = false;
+  }
+  )?
+  {
+    jjtThis.name = tokenId.image;
+  }
+  #ScalarVariable(isNotArray)
+}
+
+void Stmtlst() #Statements :
+{}
+{
+  (
+    Stmt()
+  )*
+}
+
+void Stmt() #void :
+{}
+{
+  While()
+| If()
+  //| Assign()
+  //| Call() < PVIRG >
+| try
+  {
+    StmtCallOrAssign() < PVIRG >
+  }
+  catch (ParseException e)
+  {
+    LOGGER.error(e);
+    error_skipto(PVIRG);
+  }
+}
+
+//a.size = 20; // what is the semantic of this? - I am removing it from grammar!!
+void StmtCallOrAssign() #void :
+{
+  Token id;
+  Token module;
+  boolean isNotAnArray = true;
+  boolean isNotInModule = true;
+  SimpleNode node;
+}
+{
+  (id = < ID >)
+  (
+    (
+      Index()
+      {
+        jjtThis.name = id.image;
+      }
+      #ArrayAccess(1)
+    {
+      isNotAnArray = false;
+    }
+  )?
+  {
+    jjtThis.name = id.image;
+  }
+  #Variable(isNotAnArray)
+< ASSIGN > Rhs() #Assign(2)
+|
+(
+  "."
+  {
+    node = jjtThis;
+  }
+  #Variable module = < ID >
+  {
+    node.jjtToken = module;
+    jjtThis.jjtToken = id;
+  }
+  #Module(1)
+{
+  isNotInModule = false;
+}
+
+)?
+{
+  jjtThis.jjtToken = id;
+}
+
+#Variable(isNotInModule)
+ArgumentList() #Call(2)
+)
+}
+
+void Assign() #void :
+{}
+{
+  Access() < ASSIGN > Rhs() < PVIRG >
+}
+
+void Rhs() #void :
+{
+  Token operator;
+}
+{
+  (	
+    Term()
+    (
+      (
+        operator = < ARITH_OP >
+      | operator = < BITWISE_OP >
+      | operator = < ADDSUB_OP >
+      )
+      Term()
+      {
+        jjtThis.jjtToken = operator;
+      }
+      #Operator(2)
+  )?
+)
+| Array() #Array(1)
+}
+
+void Term() #void :
+{}
+{
+  (< ADDSUB_OP >
+  )?
+  (
+    jjtThis.jjtToken = < INTEGER > #Integer
+    //| Call() | Access()
+  | CallOrAccess()
+)
+}
+
+void CallOrAccess() #void :
+{
+  SimpleNode thisNode;
+  Token module;
+  Token idToken;
+}
+{
+  (
+    (idToken = < ID >
+    {
+      jjtThis.jjtToken = idToken;
+      jjtThis.name = jjtThis.jjtToken.image;
+      thisNode = jjtThis;
+    }
+    ) #Variable)
+  (
+    ArgumentList() #Call(2)
+| "."
+  (
+    (
+      (module = < ID >
+      {
+        jjtThis.jjtToken = thisNode.jjtToken;
+        thisNode.jjtToken = module;
+      }
+      ) #Module(1)
+  )
+  ArgumentList() #Call(2)
+| < SIZE > #Sizeof(1)
+)
+|
+(
+  Index()
+  {
+    jjtThis.name = idToken.image;
+  }
+  #ArrayAccess(1)
+)
+)?
+}
+
+void Exprtest() #Condition(2) :
+{}
+{
+  < LPAR >
+  Access() < RELA_OP > Rhs() < RPAR >
+}
+
+void While() :
+{}
+{
+  try
+  {
+    < WHILE > Exprtest() < LCHAVETA >
+  }
+  catch (ParseException e)
+  {
+    LOGGER.error(e);
+    error_skipto(LCHAVETA);
+  }
+  try
+  {
+    Stmtlst() < RCHAVETA >
+  }
+  catch (ParseException e)
+  {
+    LOGGER.error(e);
+    error_skipto(RCHAVETA);
+  }
+}
+
+void If() :
+{
+}
+{
+  try
+  {
+    < IF > Exprtest() < LCHAVETA >
+  }
+  catch (ParseException e)
+  {
+    LOGGER.error(e);
+    error_skipto(LCHAVETA);
+  }
+  
+    try
+    {
+      Stmtlst() < RCHAVETA >
+    }
+    catch (ParseException e)
+    {
+      LOGGER.error(e);
+      error_skipto(RCHAVETA);
+    }
+	(	  
+    try
+    {
+      < ELSE > < LCHAVETA >
+    }
+    catch (ParseException e)
+    {
+      LOGGER.error(e);
+      error_skipto(LCHAVETA);
+    }
+    try
+    {
+      Stmtlst() < RCHAVETA >
+    }
+    catch (ParseException e)
+    {
+      LOGGER.error(e);
+      error_skipto(RCHAVETA);
+    }
+  )?
+}
+
+void Call() #void :
+{}
+{
+  < ID > ("." < ID >)? 
+  ArgumentList()
+}
+
+void ArgumentList() :
+{}
+{
+  try
+  {
+    < LPAR >
+    [
+      Argument() 
+      (
+      < VIRG > Argument()
+      ) *
+    ]
+  }
+  catch (ParseException e)
+  {
+    LOGGER.error(e);
+    error_skipto(RPAR);
+  }
+  < RPAR >
+}
+
+void Argument() #void :
+{}
+{
+  (
+    jjtThis.jjtToken = < ID > #Variable
+  | jjtThis.jjtToken = < STRING > #String
+  | jjtThis.jjtToken = < INTEGER > #Integer
+  )
+}
+
+void Access() #void : //Array or scalar access
+{
+  Token idToken;
+  boolean isAnId = true;
+}
+{
+  idToken = < ID >
+  (
+    {
+      isAnId = false;
+    }
+    "."
+    {
+      jjtThis.name = idToken.image;
+    }
+    #Variable < SIZE > #Sizeof(1)
+| Index()
+  {
+    jjtThis.name = idToken.image;
+  }
+  #ArrayAccess(1)
+)?
+{
+  jjtThis.name = idToken.image;
+}
+
+#Variable(isAnId)
+}
+
+void ScalarAccess() #void :
+{
+  Token idToken;
+}
+{
+  (idToken = < ID >
+  {
+    jjtThis.name = idToken.image;
+  }
+  #Variable) 
+  [ 
+  "." < SIZE > #Sizeof(1)
+]
+}
+
+void Index() :
+{}
+{
+  "["
+  (
+    jjtThis.jjtToken = < ID >
+  | jjtThis.jjtToken = < INTEGER >
+  )
+  "]"
+}
+
+JAVACODE 
+void error_skipto(int kind)
+{
+  Token t;
+  do
+  {
+    if(kind != RCHAVETA && token.next != null && token.next.kind == RCHAVETA)
+    	break;
+    t = getNextToken();
+  }
+  while (t.kind != kind);
+}
