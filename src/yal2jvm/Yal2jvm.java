@@ -24,7 +24,12 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
           jj_la1[0] = jj_gen;
           break label_1;
         }
-        Ex_Declaration();
+        try {
+          Declaration();
+        } catch (ParseException e) {
+      LOGGER.error(e);
+      error_skipto(PVIRG);
+        }
       }
       label_2:
       while (true) {
@@ -36,10 +41,20 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
           jj_la1[1] = jj_gen;
           break label_2;
         }
-        Function();
+        try {
+          Function();
+        } catch (ParseException e) {
+      LOGGER.error(e);
+      error_skipto(PVIRG);
+        }
       }
-      jj_consume_token(RCHAVETA);
-      jj_consume_token(0);
+      try {
+        jj_consume_token(RCHAVETA);
+        jj_consume_token(0);
+      } catch (ParseException e) {
+    LOGGER.error(e);
+    error_skipto(EOF);
+      }
     jjtree.closeNodeScope(jjtn000, true);
     jjtc000 = false;
     {if (true) return jjtn000;}
@@ -201,26 +216,27 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
   ASTFunction jjtn000 = new ASTFunction(JJTFUNCTION);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);ASTArrayVariable aVar;
-  Token functionId;
+  Token functionId = null;
   boolean returnValueIsAnArray = false;
     try {
-      jj_consume_token(FUNCTION);
-      functionId = jj_consume_token(ID);
-    ASTReturn jjtn003 = new ASTReturn(JJTRETURN);
-    boolean jjtc003 = true;
-    jjtree.openNodeScope(jjtn003);
       try {
-        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case ASSIGN:
-        case 31:
+        jj_consume_token(FUNCTION);
+        functionId = jj_consume_token(ID);
+      ASTReturn jjtn003 = new ASTReturn(JJTRETURN);
+      boolean jjtc003 = true;
+      jjtree.openNodeScope(jjtn003);
+        try {
           switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+          case ASSIGN:
           case 31:
-            jj_consume_token(31);
-            jj_consume_token(32);
+            switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+            case 31:
+              jj_consume_token(31);
+              jj_consume_token(32);
         ASTArrayVariable jjtn001 = new ASTArrayVariable(JJTARRAYVARIABLE);
         boolean jjtc001 = true;
         jjtree.openNodeScope(jjtn001);
-            try {
+              try {
         jjtree.closeNodeScope(jjtn001, true);
         jjtc001 = false;
         aVar = jjtn001;
@@ -228,45 +244,54 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
         {
           jjtn001.name = functionId.image;
         }
-            } finally {
+              } finally {
         if (jjtc001) {
           jjtree.closeNodeScope(jjtn001, true);
         }
+              }
+              break;
+            default:
+              jj_la1[6] = jj_gen;
+              ;
             }
-            break;
-          default:
-            jj_la1[6] = jj_gen;
-            ;
-          }
       ASTScalarVariable jjtn002 = new ASTScalarVariable(JJTSCALARVARIABLE);
       boolean jjtc002 = true;
       jjtree.openNodeScope(jjtn002);
-          try {
-            jj_consume_token(ASSIGN);
+            try {
+              jj_consume_token(ASSIGN);
       jjtn002.name = functionId.image;
-            functionId = jj_consume_token(ID);
-          } finally {
+              functionId = jj_consume_token(ID);
+            } finally {
       if (jjtc002) {
         jjtree.closeNodeScope(jjtn002,  ! returnValueIsAnArray);
       }
+            }
+            break;
+          default:
+            jj_la1[7] = jj_gen;
+            ;
           }
-          break;
-        default:
-          jj_la1[7] = jj_gen;
-          ;
-        }
-      } finally {
-    if (jjtc003) {
-      jjtree.closeNodeScope(jjtn003, true);
-    }
+        } finally {
+      if (jjtc003) {
+        jjtree.closeNodeScope(jjtn003, true);
       }
-      Parameters();
-      jj_consume_token(LCHAVETA);
-      Stmtlst();
+        }
+        Parameters();
+        jj_consume_token(LCHAVETA);
+      } catch (ParseException e) {
+    LOGGER.error(e);
+    error_skipto(LCHAVETA);
+      }
+      try {
+        Stmtlst();
+      } catch (ParseException e) {
+    LOGGER.error(e);
+    error_skipto(RCHAVETA);
+      }
       jj_consume_token(RCHAVETA);
-  jjtree.closeNodeScope(jjtn000, true);
-  jjtc000 = false;
-  jjtn000.name = functionId.image;
+    jjtree.closeNodeScope(jjtn000, true);
+    jjtc000 = false;
+    jjtn000.name = functionId.image;
     } catch (Throwable jjte000) {
     if (jjtc000) {
       jjtree.clearNodeScope(jjtn000);
@@ -428,7 +453,13 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
       If();
       break;
     case ID:
-      StmtCallOrAssign();
+      try {
+        StmtCallOrAssign();
+        jj_consume_token(PVIRG);
+      } catch (ParseException e) {
+    LOGGER.error(e);
+    error_skipto(PVIRG);
+      }
       break;
     default:
       jj_la1[12] = jj_gen;
@@ -451,17 +482,17 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case 31:
         Index();
-                ASTArrayAccess jjtn001 = new ASTArrayAccess(JJTARRAYACCESS);
-                boolean jjtc001 = true;
-                jjtree.openNodeScope(jjtn001);
+        ASTArrayAccess jjtn001 = new ASTArrayAccess(JJTARRAYACCESS);
+        boolean jjtc001 = true;
+        jjtree.openNodeScope(jjtn001);
         try {
-                jjtree.closeNodeScope(jjtn001,  1);
-                jjtc001 = false;
-                jjtn001.name = id.image;
+        jjtree.closeNodeScope(jjtn001,  1);
+        jjtc001 = false;
+        jjtn001.name = id.image;
         } finally {
-                if (jjtc001) {
-                  jjtree.closeNodeScope(jjtn001,  1);
-                }
+        if (jjtc001) {
+          jjtree.closeNodeScope(jjtn001,  1);
+        }
         }
       isNotAnArray = false;
         break;
@@ -586,7 +617,6 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
       jj_consume_token(-1);
       throw new ParseException();
     }
-    jj_consume_token(PVIRG);
   }
 
   static final public void Assign() throws ParseException {
@@ -819,17 +849,17 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
         break;
       case 31:
         Index();
-             ASTArrayAccess jjtn006 = new ASTArrayAccess(JJTARRAYACCESS);
-             boolean jjtc006 = true;
-             jjtree.openNodeScope(jjtn006);
+    ASTArrayAccess jjtn006 = new ASTArrayAccess(JJTARRAYACCESS);
+    boolean jjtc006 = true;
+    jjtree.openNodeScope(jjtn006);
         try {
-             jjtree.closeNodeScope(jjtn006,  1);
-             jjtc006 = false;
-            jjtn006.name = idToken.image;
+    jjtree.closeNodeScope(jjtn006,  1);
+    jjtc006 = false;
+    jjtn006.name = idToken.image;
         } finally {
-             if (jjtc006) {
-               jjtree.closeNodeScope(jjtn006,  1);
-             }
+    if (jjtc006) {
+      jjtree.closeNodeScope(jjtn006,  1);
+    }
         }
         break;
       default:
@@ -882,11 +912,21 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
     try {
-      jj_consume_token(WHILE);
-      Exprtest();
-      jj_consume_token(LCHAVETA);
-      Stmtlst();
-      jj_consume_token(RCHAVETA);
+      try {
+        jj_consume_token(WHILE);
+        Exprtest();
+        jj_consume_token(LCHAVETA);
+      } catch (ParseException e) {
+    LOGGER.error(e);
+    error_skipto(LCHAVETA);
+      }
+      try {
+        Stmtlst();
+        jj_consume_token(RCHAVETA);
+      } catch (ParseException e) {
+    LOGGER.error(e);
+    error_skipto(RCHAVETA);
+      }
     } catch (Throwable jjte000) {
     if (jjtc000) {
       jjtree.clearNodeScope(jjtn000);
@@ -917,19 +957,34 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
       try {
         jj_consume_token(IF);
         Exprtest();
+        jj_consume_token(LCHAVETA);
       } catch (ParseException e) {
     LOGGER.error(e);
     error_skipto(LCHAVETA);
       }
-      jj_consume_token(LCHAVETA);
-      Stmtlst();
-      jj_consume_token(RCHAVETA);
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case ELSE:
-        jj_consume_token(ELSE);
-        jj_consume_token(LCHAVETA);
+      try {
         Stmtlst();
         jj_consume_token(RCHAVETA);
+      } catch (ParseException e) {
+      LOGGER.error(e);
+      error_skipto(RCHAVETA);
+      }
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case ELSE:
+        try {
+          jj_consume_token(ELSE);
+          jj_consume_token(LCHAVETA);
+        } catch (ParseException e) {
+      LOGGER.error(e);
+      error_skipto(LCHAVETA);
+        }
+        try {
+          Stmtlst();
+          jj_consume_token(RCHAVETA);
+        } catch (ParseException e) {
+      LOGGER.error(e);
+      error_skipto(RCHAVETA);
+        }
         break;
       default:
         jj_la1[24] = jj_gen;
@@ -976,29 +1031,34 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
     try {
-      jj_consume_token(LPAR);
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case INTEGER:
-      case ID:
-      case STRING:
-        Argument();
-        label_5:
-        while (true) {
-          switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-          case VIRG:
-            ;
-            break;
-          default:
-            jj_la1[26] = jj_gen;
-            break label_5;
-          }
-          jj_consume_token(VIRG);
+      try {
+        jj_consume_token(LPAR);
+        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+        case INTEGER:
+        case ID:
+        case STRING:
           Argument();
+          label_5:
+          while (true) {
+            switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+            case VIRG:
+              ;
+              break;
+            default:
+              jj_la1[26] = jj_gen;
+              break label_5;
+            }
+            jj_consume_token(VIRG);
+            Argument();
+          }
+          break;
+        default:
+          jj_la1[27] = jj_gen;
+          ;
         }
-        break;
-      default:
-        jj_la1[27] = jj_gen;
-        ;
+      } catch (ParseException e) {
+    LOGGER.error(e);
+    error_skipto(RPAR);
       }
       jj_consume_token(RPAR);
     } catch (Throwable jjte000) {
@@ -1078,42 +1138,42 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
       case 33:
       isAnId = false;
         jj_consume_token(33);
-          ASTVariable jjtn001 = new ASTVariable(JJTVARIABLE);
-          boolean jjtc001 = true;
-          jjtree.openNodeScope(jjtn001);
+      ASTVariable jjtn001 = new ASTVariable(JJTVARIABLE);
+      boolean jjtc001 = true;
+      jjtree.openNodeScope(jjtn001);
         try {
-          jjtree.closeNodeScope(jjtn001, true);
-          jjtc001 = false;
-         jjtn001.name = idToken.image;
+      jjtree.closeNodeScope(jjtn001, true);
+      jjtc001 = false;
+      jjtn001.name = idToken.image;
         } finally {
-          if (jjtc001) {
-            jjtree.closeNodeScope(jjtn001, true);
-          }
+      if (jjtc001) {
+        jjtree.closeNodeScope(jjtn001, true);
+      }
         }
-                                                    ASTSizeof jjtn002 = new ASTSizeof(JJTSIZEOF);
-                                                    boolean jjtc002 = true;
-                                                    jjtree.openNodeScope(jjtn002);
+                ASTSizeof jjtn002 = new ASTSizeof(JJTSIZEOF);
+                boolean jjtc002 = true;
+                jjtree.openNodeScope(jjtn002);
         try {
           jj_consume_token(SIZE);
         } finally {
-                                                    if (jjtc002) {
-                                                      jjtree.closeNodeScope(jjtn002,  1);
-                                                    }
+                if (jjtc002) {
+                  jjtree.closeNodeScope(jjtn002,  1);
+                }
         }
         break;
       case 31:
         Index();
-            ASTArrayAccess jjtn003 = new ASTArrayAccess(JJTARRAYACCESS);
-            boolean jjtc003 = true;
-            jjtree.openNodeScope(jjtn003);
+    ASTArrayAccess jjtn003 = new ASTArrayAccess(JJTARRAYACCESS);
+    boolean jjtc003 = true;
+    jjtree.openNodeScope(jjtn003);
         try {
-            jjtree.closeNodeScope(jjtn003,  1);
-            jjtc003 = false;
-            jjtn003.name = idToken.image;
+    jjtree.closeNodeScope(jjtn003,  1);
+    jjtc003 = false;
+    jjtn003.name = idToken.image;
         } finally {
-            if (jjtc003) {
-              jjtree.closeNodeScope(jjtn003,  1);
-            }
+    if (jjtc003) {
+      jjtree.closeNodeScope(jjtn003,  1);
+    }
         }
         break;
       default:
@@ -1132,7 +1192,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
     try {
   jjtree.closeNodeScope(jjtn004,  isAnId);
   jjtc004 = false;
- jjtn004.name = idToken.image;
+  jjtn004.name = idToken.image;
     } finally {
   if (jjtc004) {
     jjtree.closeNodeScope(jjtn004,  isAnId);
@@ -1202,15 +1262,6 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
     }
   }
 
-  static final public void Ex_Declaration() throws ParseException {
-    try {
-      Declaration();
-    } catch (ParseException e) {
-    LOGGER.error(e);
-    error_skipto(PVIRG);
-    }
-  }
-
   static void error_skipto(int kind) throws ParseException {
  /*@bgen(jjtree) error_skipto */
 ASTerror_skipto jjtn000 = new ASTerror_skipto(JJTERROR_SKIPTO);
@@ -1219,6 +1270,8 @@ jjtree.openNodeScope(jjtn000);
 try {Token t;
   do
   {
+    if(kind != RCHAVETA && token.next != null && token.next.kind == RCHAVETA)
+        break;
     t = getNextToken();
   }
   while (t.kind != kind);/*@bgen(jjtree)*/
