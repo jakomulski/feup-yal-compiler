@@ -1,0 +1,19 @@
+CHECKPOINT 1 FEEDBACK
+=====================
+Class 3 - Group 34
+
+These notes are based on an analysis of commit d024aa1041d08b0653e579490001ae33a86d0a5f.
+If you believe this is an error, contact your class teacher.
+=====================
+
+High-priority:
+	- "a.size = 10;" should be a semantic error, not a syntactic one.
+	- Tree Annotation is incomplete:
+		- In Term(), there is no way to obtain the sign of the expression, so it's not possible to distinguish "1" from "-1".
+		- In Call(), the name of the called function is not stored
+	- Error Recovery is incimplete: consider aval4_err.yal
+
+Low-priority:
+	- Stop after the first 10 parser errors
+	- Consider outputting "prettier" (i.e., cleaner and more informative) error messages.
+	- Message says "Reading from standard input", but the compiler reads the input from a file instead.
