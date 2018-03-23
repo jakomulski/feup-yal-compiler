@@ -11,7 +11,7 @@ High-priority:
 	- Tree Annotation is incomplete:
 		- In Term(), there is no way to obtain the sign of the expression, so it's not possible to distinguish "1" from "-1".
 		- In Call(), the name of the called function is not stored
-	- Error Recovery is incimplete: consider aval4_err.yal
+	- Error Recovery is incomplete: consider aval4_err.yal
 
 Low-priority:
 	- Stop after the first 10 parser errors
