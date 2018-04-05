@@ -14,6 +14,5 @@ High-priority:
 	- Error Recovery is incomplete: consider aval4_err.yal
 
 Low-priority:
-	- Stop after the first 10 parser errors
 	- Consider outputting "prettier" (i.e., cleaner and more informative) error messages.
 	- Message says "Reading from standard input", but the compiler reads the input from a file instead.
