@@ -2,11 +2,8 @@
 /* JavaCCOptions:MULTI=true,NODE_USES_PARSER=false,VISITOR=false,TRACK_TOKENS=false,NODE_PREFIX=AST,NODE_EXTENDS=,NODE_FACTORY=,SUPPORT_CLASS_VISIBILITY_PUBLIC=true */
 package yal2jvm;
 
-import custom.ASTWithName;
-
 public
-class ASTScalarVariable extends SimpleNode implements ASTWithName {
-	String name;
+class ASTScalarVariable extends SimpleNode {
   public ASTScalarVariable(int id) {
     super(id);
   }
@@ -14,11 +11,6 @@ class ASTScalarVariable extends SimpleNode implements ASTWithName {
   public ASTScalarVariable(Yal2jvm p, int id) {
     super(p, id);
   }
-
-@Override
-public String getName() {
-	return name;
-}
 
 }
 /* JavaCC - OriginalChecksum=90c3751895bf33c15604ca23ac3e8605 (do not edit this line) */

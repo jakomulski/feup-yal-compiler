@@ -22,7 +22,7 @@ SKIP :
 {
   " "  
 | "\t"
-| "\n"
+| "\n" 
 | "\r"
 | < "//" (~[ "\n", "\r" ])*
     (
@@ -326,7 +326,7 @@ void StmtCallOrAssign() #void :
     node = jjtThis;
   }
   #Variable module = < ID >
-  {
+  { 
     node.jjtToken = module;
     jjtThis.jjtToken = id;
   }
@@ -389,9 +389,9 @@ void Term() #void :
 void CallOrAccess() #void :
 {
   SimpleNode thisNode;
-  Token module;
-  Token idToken;
-}
+  Token module; 
+  Token idToken; 
+} 
 {
   (
     (idToken = < ID >

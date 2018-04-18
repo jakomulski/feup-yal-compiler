@@ -4,8 +4,6 @@ package yal2jvm;
 
 public
 class ASTVariable extends SimpleNode {
-	String name;
-	
   public ASTVariable(int id) {
     super(id);
   }

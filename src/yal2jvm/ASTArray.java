@@ -2,50 +2,15 @@
 /* JavaCCOptions:MULTI=true,NODE_USES_PARSER=false,VISITOR=false,TRACK_TOKENS=false,NODE_PREFIX=AST,NODE_EXTENDS=,NODE_FACTORY=,SUPPORT_CLASS_VISIBILITY_PUBLIC=true */
 package yal2jvm;
 
-import custom.Scope;
-import custom.Types;
+public
+class ASTArray extends SimpleNode {
+  public ASTArray(int id) {
+    super(id);
+  }
 
-public class ASTArray extends SimpleNode {
-	
-	//public final Types type = Types.ARRAY;
-	
-	public ASTArray(int id) {
-		super(id);
-		type = Types.ARRAY;
-	}
-
-	public ASTArray(Yal2jvm p, int id) {
-		super(p, id);
-		type = Types.ARRAY;
-	}
-
-	//TODO: clean
-	public void decompose(Scope scope) throws ParseException {
-		Node child = this.jjtGetChild(0);
-		if (ASTVariable.class.equals(child.getClass())) { // variable
-			String var = ((ASTVariable) child).name;
-			SimpleNode integerNode = scope.variables().get(var);
-			if (integerNode == null || !integerNode.getClass().equals(ASTInteger.class))
-				throw new ParseException();
-			else {
-				((SimpleNode) this).children = null;
-				this.jjtAddChild(integerNode, integerNode.id);
-			}
-		} else if (ASTSizeof.class.equals(child.getClass())) {
-			String var = ((ASTVariable) child.jjtGetChild(0)).name;
-			SimpleNode arrayNode = scope.variables().get(var);
-			if (arrayNode == null || !arrayNode.getClass().equals(ASTArray.class))
-				throw new ParseException();
-			else {
-				((SimpleNode) this).children = null;
-				SimpleNode integerNode = (SimpleNode) arrayNode.jjtGetChild(0);
-				this.jjtAddChild(integerNode, integerNode.id);
-			}
-		}
-	}
+  public ASTArray(Yal2jvm p, int id) {
+    super(p, id);
+  }
 
 }
-/*
- * JavaCC - OriginalChecksum=6f0fce28245b5dde64afe9d0e1f10356 (do not edit this
- * line)
- */
+/* JavaCC - OriginalChecksum=6f0fce28245b5dde64afe9d0e1f10356 (do not edit this line) */

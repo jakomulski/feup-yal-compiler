@@ -23,3 +23,12 @@
 /Yal2jvmConstants.java
 /Yal2jvmTokenManager.java
 /Yal2jvmTreeConstants.java
+/ASTArray.java
+/ASTArrayAccess.java
+/ASTArrayVariable.java
+/ASTFunction.java
+/ASTInteger.java
+/ASTModule.java
+/ASTScalarVariable.java
+/ASTVariable.java
+/SimpleNode.java

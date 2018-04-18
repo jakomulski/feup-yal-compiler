@@ -26,7 +26,7 @@ SKIP :
 {
   " "  
 | "\t"
-| "\n"
+| "\n" 
 | "\r"
 | < "//" (~[ "\n", "\r" ])*
     (
@@ -701,7 +701,7 @@ void StmtCallOrAssign()       :
     jjtc005 = false;
   }
 /*@egen*/
-  {
+  { 
     node.jjtToken = module;
     jjtn005.jjtToken = id;
   }/*@bgen(jjtree)*/
@@ -873,9 +873,9 @@ void Term()       :
 void CallOrAccess()       :
 {
   SimpleNode thisNode;
-  Token module;
-  Token idToken;
-}
+  Token module; 
+  Token idToken; 
+} 
 {
   (/*@bgen(jjtree) Variable */
     {

@@ -2,21 +2,15 @@
 /* JavaCCOptions:MULTI=true,NODE_USES_PARSER=false,VISITOR=false,TRACK_TOKENS=false,NODE_PREFIX=AST,NODE_EXTENDS=,NODE_FACTORY=,SUPPORT_CLASS_VISIBILITY_PUBLIC=true */
 package yal2jvm;
 
-import custom.Types;
+public
+class ASTInteger extends SimpleNode {
+  public ASTInteger(int id) {
+    super(id);
+  }
 
-public class ASTInteger extends SimpleNode {
-	public ASTInteger(int id) {
-		super(id);
-		type = Types.INTEGER;
-	}
-
-	public ASTInteger(Yal2jvm p, int id) {
-		super(p, id);
-		type = Types.INTEGER;
-	}
+  public ASTInteger(Yal2jvm p, int id) {
+    super(p, id);
+  }
 
 }
-/*
- * JavaCC - OriginalChecksum=8aefacfc6d7881b0052655cef3efc393 (do not edit this
- * line)
- */
+/* JavaCC - OriginalChecksum=8aefacfc6d7881b0052655cef3efc393 (do not edit this line) */

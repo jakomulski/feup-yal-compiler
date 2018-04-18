@@ -2,16 +2,12 @@
 /* JavaCCOptions:MULTI=true,NODE_USES_PARSER=false,VISITOR=false,TRACK_TOKENS=false,NODE_PREFIX=AST,NODE_EXTENDS=,NODE_FACTORY=,SUPPORT_CLASS_VISIBILITY_PUBLIC=true */
 package yal2jvm;
 
-import custom.ASTWithName;
-
 public
-class ASTArrayAccess extends SimpleNode{
-  
-	String name;
-	public ASTArrayAccess(int id) {
+class ASTArrayAccess extends SimpleNode {
+  public ASTArrayAccess(int id) {
     super(id);
   }
-  
+
   public ASTArrayAccess(Yal2jvm p, int id) {
     super(p, id);
   }
