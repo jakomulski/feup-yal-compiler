@@ -174,9 +174,9 @@ void Declaration()       :
 {
   Element()
   (
-    < ASSIGN >/*@bgen(jjtree) #Assign( 2) */
+    < ASSIGN >/*@bgen(jjtree) #Declare( 2) */
     {
-      ASTAssign jjtn002 = new ASTAssign(JJTASSIGN);
+      ASTDeclare jjtn002 = new ASTDeclare(JJTDECLARE);
       boolean jjtc002 = true;
       jjtree.openNodeScope(jjtn002);
     }
@@ -232,7 +232,7 @@ void Declaration()       :
         jjtree.closeNodeScope(jjtn002,  2);
       }
     }
-/*@egen*/           
+/*@egen*/            
 )?
 < PVIRG >
 }
@@ -574,7 +574,7 @@ void Stmt()       :
   }
 }
 
-//a.size = 20; // what is the semantic of this? - I am removing it from grammar!!
+//a.size = 20; // what is the semantic of this? - I am removing it from grammar
 void StmtCallOrAssign()       :
 {
   Token id;
@@ -846,11 +846,20 @@ void Rhs()       :
 }
 
 void Term()       :
-{}
 {
-  (< ADDSUB_OP >
-  )?
-  (/*@bgen(jjtree) Integer */
+	Token sign = null;
+}
+{
+  (sign = < ADDSUB_OP >
+  )?/*@bgen(jjtree) #Negation( sign != null) */
+  {
+    ASTNegation jjtn002 = new ASTNegation(JJTNEGATION);
+    boolean jjtc002 = true;
+    jjtree.openNodeScope(jjtn002);
+  }
+  try {
+/*@egen*/
+  ((/*@bgen(jjtree) Integer */
     {
       ASTInteger jjtn001 = new ASTInteger(JJTINTEGER);
       boolean jjtc001 = true;
@@ -867,7 +876,32 @@ void Term()       :
 /*@egen*/         
     //| Call() | Access()
   | CallOrAccess()
-)
+ )/*@bgen(jjtree)*/
+  {
+    jjtree.closeNodeScope(jjtn002,  sign != null);
+    jjtc002 = false;
+  }
+/*@egen*/{ jjtn002.jjtToken = sign; })/*@bgen(jjtree)*/
+  } catch (Throwable jjte002) {
+    if (jjtc002) {
+      jjtree.clearNodeScope(jjtn002);
+      jjtc002 = false;
+    } else {
+      jjtree.popNode();
+    }
+    if (jjte002 instanceof RuntimeException) {
+      throw (RuntimeException)jjte002;
+    }
+    if (jjte002 instanceof ParseException) {
+      throw (ParseException)jjte002;
+    }
+    throw (Error)jjte002;
+  } finally {
+    if (jjtc002) {
+      jjtree.closeNodeScope(jjtn002,  sign != null);
+    }
+  }
+/*@egen*/                       
 }
 
 void CallOrAccess()       :

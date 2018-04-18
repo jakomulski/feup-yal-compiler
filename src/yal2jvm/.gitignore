@@ -32,3 +32,6 @@
 /ASTScalarVariable.java
 /ASTVariable.java
 /SimpleNode.java
+/ASTDeclare.java
+/ASTNeg.java
+/ASTNegation.java

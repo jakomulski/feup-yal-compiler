@@ -9,7 +9,7 @@ public class Scope {
 	
 	private final HashMap<String, ASTFunction> functions; 
 	private final HashMap<String, SimpleNode> variables; 
-	
+		
 	
 	public Scope(){
 		functions = new HashMap<>();
@@ -25,6 +25,11 @@ public class Scope {
 	public HashMap<String, ASTFunction> functions() {
 		return functions;
 	}
+	@Override
+	public String toString() {
+		return "Scope [functions=" + functions + ", variables=" + variables + "]";
+	}
+
 	public HashMap<String, SimpleNode> variables() {
 		return variables;
 	}

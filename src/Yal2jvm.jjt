@@ -143,7 +143,7 @@ void Declaration() #void :
     (
       Array() #Array
     | Integer()
-  ) #Assign(2)
+  ) #Declare(2)
 )?
 < PVIRG >
 }
@@ -292,7 +292,7 @@ void Stmt() #void :
   }
 }
 
-//a.size = 20; // what is the semantic of this? - I am removing it from grammar!!
+//a.size = 20; // what is the semantic of this? - I am removing it from grammar
 void StmtCallOrAssign() #void :
 {
   Token id;
@@ -375,15 +375,17 @@ void Rhs() #void :
 }
 
 void Term() #void :
-{}
 {
-  (< ADDSUB_OP >
+	Token sign = null;
+}
+{
+  (sign = < ADDSUB_OP >
   )?
-  (
+  ((
     jjtThis.jjtToken = < INTEGER > #Integer
     //| Call() | Access()
   | CallOrAccess()
-)
+ ){ jjtThis.jjtToken = sign; })#Negation(sign != null)
 }
 
 void CallOrAccess() #void :

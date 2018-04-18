@@ -22,8 +22,9 @@ public class Main {
 		new Yal2jvm(new java.io.FileInputStream(args[0]));
 		ASTModule module = Yal2jvm.Start();
 		
-		SemanticAnalyzer.dump("", module);
-		//module.dump("");
+		
+		module.dump("");
+		new SemanticAnalyzer(module).analyze();
 		//module.init();
 		//module.dump(" | ");
 		LOGGER.info("---");

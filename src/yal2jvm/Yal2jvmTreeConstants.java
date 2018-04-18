@@ -6,7 +6,7 @@ public interface Yal2jvmTreeConstants
   public int JJTMODULE = 0;
   public int JJTVOID = 1;
   public int JJTARRAY = 2;
-  public int JJTASSIGN = 3;
+  public int JJTDECLARE = 3;
   public int JJTINTEGER = 4;
   public int JJTFUNCTION = 5;
   public int JJTARRAYVARIABLE = 6;
@@ -16,23 +16,25 @@ public interface Yal2jvmTreeConstants
   public int JJTSTATEMENTS = 10;
   public int JJTARRAYACCESS = 11;
   public int JJTVARIABLE = 12;
-  public int JJTCALL = 13;
-  public int JJTOPERATOR = 14;
-  public int JJTSIZEOF = 15;
-  public int JJTCONDITION = 16;
-  public int JJTWHILE = 17;
-  public int JJTIF = 18;
-  public int JJTARGUMENTLIST = 19;
-  public int JJTSTRING = 20;
-  public int JJTINDEX = 21;
-  public int JJTERROR_SKIPTO = 22;
+  public int JJTASSIGN = 13;
+  public int JJTCALL = 14;
+  public int JJTOPERATOR = 15;
+  public int JJTNEGATION = 16;
+  public int JJTSIZEOF = 17;
+  public int JJTCONDITION = 18;
+  public int JJTWHILE = 19;
+  public int JJTIF = 20;
+  public int JJTARGUMENTLIST = 21;
+  public int JJTSTRING = 22;
+  public int JJTINDEX = 23;
+  public int JJTERROR_SKIPTO = 24;
 
 
   public String[] jjtNodeName = {
     "Module",
     "void",
     "Array",
-    "Assign",
+    "Declare",
     "Integer",
     "Function",
     "ArrayVariable",
@@ -42,8 +44,10 @@ public interface Yal2jvmTreeConstants
     "Statements",
     "ArrayAccess",
     "Variable",
+    "Assign",
     "Call",
     "Operator",
+    "Negation",
     "Sizeof",
     "Condition",
     "While",
@@ -54,4 +58,4 @@ public interface Yal2jvmTreeConstants
     "error_skipto",
   };
 }
-/* JavaCC - OriginalChecksum=b23a0fd9a5d2018fee1554fb1493e0b3 (do not edit this line) */
+/* JavaCC - OriginalChecksum=20b297eb92fd1949f585506a9a0a121b (do not edit this line) */

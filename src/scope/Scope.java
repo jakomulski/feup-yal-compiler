@@ -1,9 +1,10 @@
 package scope;
+import java.util.HashMap;
 import java.util.Map;
 
 public abstract class Scope {
 	Scope parent;
-	protected Map<String, VariableDesc> variables;
+	protected Map<String, VariableDesc> variables = new HashMap<>();
 	public Scope(Scope parent){
 		this.parent = parent;
 	}
@@ -20,8 +21,19 @@ public abstract class Scope {
 		this.variables.put(name, desc);
 	}
 	
+	public Scope getParent(){
+		return parent;
+	}
 	
 	public abstract FunctionDesc getFunction(String name);
+
+	@Override
+	public String toString() {
+		if(parent != null){
+			return "variables = " + variables + "\n" + parent.toString();
+		}
+		return "variables = " + variables;
+	}
 }
 
 

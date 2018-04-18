@@ -87,7 +87,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case ASSIGN:
       jj_consume_token(ASSIGN);
-      ASTAssign jjtn002 = new ASTAssign(JJTASSIGN);
+      ASTDeclare jjtn002 = new ASTDeclare(JJTDECLARE);
       boolean jjtc002 = true;
       jjtree.openNodeScope(jjtn002);
       try {
@@ -469,7 +469,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
     }
   }
 
-//a.size = 20; // what is the semantic of this? - I am removing it from grammar!!
+//a.size = 20; // what is the semantic of this? - I am removing it from grammar
   static final public void StmtCallOrAssign() throws ParseException {
   Token id;
   Token module;
@@ -706,34 +706,61 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
   }
 
   static final public void Term() throws ParseException {
+        Token sign = null;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case ADDSUB_OP:
-      jj_consume_token(ADDSUB_OP);
+      sign = jj_consume_token(ADDSUB_OP);
       break;
     default:
       jj_la1[19] = jj_gen;
       ;
     }
-    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-    case INTEGER:
+    ASTNegation jjtn002 = new ASTNegation(JJTNEGATION);
+    boolean jjtc002 = true;
+    jjtree.openNodeScope(jjtn002);
+    try {
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case INTEGER:
       ASTInteger jjtn001 = new ASTInteger(JJTINTEGER);
       boolean jjtc001 = true;
       jjtree.openNodeScope(jjtn001);
-      try {
-        jjtn001.jjtToken = jj_consume_token(INTEGER);
-      } finally {
+        try {
+          jjtn001.jjtToken = jj_consume_token(INTEGER);
+        } finally {
       if (jjtc001) {
         jjtree.closeNodeScope(jjtn001, true);
       }
+        }
+        break;
+      case ID:
+        CallOrAccess();
+        break;
+      default:
+        jj_la1[20] = jj_gen;
+        jj_consume_token(-1);
+        throw new ParseException();
       }
-      break;
-    case ID:
-      CallOrAccess();
-      break;
-    default:
-      jj_la1[20] = jj_gen;
-      jj_consume_token(-1);
-      throw new ParseException();
+    jjtree.closeNodeScope(jjtn002,  sign != null);
+    jjtc002 = false;
+    jjtn002.jjtToken = sign;
+    } catch (Throwable jjte002) {
+    if (jjtc002) {
+      jjtree.clearNodeScope(jjtn002);
+      jjtc002 = false;
+    } else {
+      jjtree.popNode();
+    }
+    if (jjte002 instanceof RuntimeException) {
+      {if (true) throw (RuntimeException)jjte002;}
+    }
+    if (jjte002 instanceof ParseException) {
+      {if (true) throw (ParseException)jjte002;}
+    }
+    {if (true) throw (Error)jjte002;}
+    } finally {
+    if (jjtc002) {
+      jjtree.closeNodeScope(jjtn002,  sign != null);
+    }
     }
   }
 

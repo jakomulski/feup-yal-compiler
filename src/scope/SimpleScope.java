@@ -1,7 +1,8 @@
 package scope;
 
-public class FunctionScope extends Scope {
-	public FunctionScope(ModuleScope parent) {
+public class SimpleScope extends Scope {
+
+	public SimpleScope(Scope parent) {
 		super(parent);
 	}
 
@@ -9,4 +10,5 @@ public class FunctionScope extends Scope {
 	public FunctionDesc getFunction(String name) {
 		return parent.getFunction(name);
 	}
+
 }
