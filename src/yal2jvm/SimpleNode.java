@@ -21,6 +21,12 @@ class SimpleNode implements Node {
 	  return children;
   }
   
+  public String getTokenValue(){
+	  if(jjtToken != null && jjtToken.image != null)
+		  return jjtToken.image;
+	  return "";
+  }
+  
   public SimpleNode(Yal2jvm p, int i) {
     this(i);
     parser = p;
@@ -64,7 +70,7 @@ class SimpleNode implements Node {
      you need to do. */
 
   public String toString() { 
-	  return Yal2jvmTreeConstants.jjtNodeName[id] + " (" + jjtToken + ")"; 
+	  return Yal2jvmTreeConstants.jjtNodeName[id] + ": " + getTokenValue(); 
 	  }
   public String toString(String prefix) { return prefix + toString(); }
 
