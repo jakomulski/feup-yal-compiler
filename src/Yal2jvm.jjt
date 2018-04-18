@@ -160,7 +160,7 @@ void Integer() :
     sign = signToken.image;
   }
   )? valueToken = < INTEGER >
-  {
+  { 
   //jjtThis.value = sign + valueToken.image;
   }
 }
@@ -196,14 +196,14 @@ void Function() :
         aVar = jjtThis;
         returnValueIsAnArray = true;
         {
-          jjtThis.name = functionId.image;
+          jjtThis.jjtToken = functionId;
         }	
       }
       #ArrayVariable
     ]
     (< ASSIGN >
     {
-      jjtThis.name = functionId.image;
+      jjtThis.jjtToken = functionId;
     }
     functionId = < ID >
     ) 
@@ -227,7 +227,7 @@ void Function() :
   }
   < RCHAVETA >
   {
-    jjtThis.name = functionId.image;
+    jjtThis.jjtToken = functionId;
   }
 }
 
@@ -253,15 +253,15 @@ void Element() #void : //Array or scalar element
 {
   tokenId = < ID > ("[" "]"
   {
-    jjtThis.name = tokenId.image;
+    jjtThis.jjtToken = tokenId;
   }
   #ArrayVariable
   { 
     isNotArray = false;
   }
   )?
-  {
-    jjtThis.name = tokenId.image;
+  { 
+    jjtThis.jjtToken = tokenId;
   }
   #ScalarVariable(isNotArray)
 }
@@ -307,7 +307,7 @@ void StmtCallOrAssign() #void :
     (
       Index()
       {
-        jjtThis.name = id.image;
+        jjtThis.jjtToken = id;
       }
       #ArrayAccess(1)
     {
@@ -315,7 +315,7 @@ void StmtCallOrAssign() #void :
     }
   )?
   {
-    jjtThis.name = id.image;
+    jjtThis.jjtToken = id;
   }
   #Variable(isNotAnArray)
 < ASSIGN > Rhs() #Assign(2)
@@ -397,7 +397,7 @@ void CallOrAccess() #void :
     (idToken = < ID >
     {
       jjtThis.jjtToken = idToken;
-      jjtThis.name = jjtThis.jjtToken.image;
+      jjtThis.jjtToken = jjtThis.jjtToken;
       thisNode = jjtThis;
     }
     ) #Variable)
@@ -420,7 +420,7 @@ void CallOrAccess() #void :
 (
   Index()
   {
-    jjtThis.name = idToken.image;
+    jjtThis.jjtToken = idToken;
   }
   #ArrayAccess(1)
 )
@@ -553,17 +553,17 @@ void Access() #void : //Array or scalar access
     }
     "."
     {
-      jjtThis.name = idToken.image;
+      jjtThis.jjtToken = idToken;
     }
     #Variable < SIZE > #Sizeof(1)
 | Index()
   {
-    jjtThis.name = idToken.image;
+    jjtThis.jjtToken = idToken;
   }
   #ArrayAccess(1)
 )?
 {
-  jjtThis.name = idToken.image;
+  jjtThis.jjtToken = idToken;
 }
 
 #Variable(isAnId)
@@ -576,7 +576,7 @@ void ScalarAccess() #void :
 {
   (idToken = < ID >
   {
-    jjtThis.name = idToken.image;
+    jjtThis.jjtToken = idToken;
   }
   #Variable) 
   [ 

@@ -243,7 +243,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
         aVar = jjtn001;
         returnValueIsAnArray = true;
         {
-          jjtn001.name = functionId.image;
+          jjtn001.jjtToken = functionId;
         }
               } finally {
         if (jjtc001) {
@@ -260,7 +260,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
       jjtree.openNodeScope(jjtn002);
             try {
               jj_consume_token(ASSIGN);
-      jjtn002.name = functionId.image;
+      jjtn002.jjtToken = functionId;
               functionId = jj_consume_token(ID);
             } finally {
       if (jjtc002) {
@@ -292,7 +292,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
       jj_consume_token(RCHAVETA);
     jjtree.closeNodeScope(jjtn000, true);
     jjtc000 = false;
-    jjtn000.name = functionId.image;
+    jjtn000.jjtToken = functionId;
     } catch (Throwable jjte000) {
     if (jjtc000) {
       jjtree.clearNodeScope(jjtn000);
@@ -378,7 +378,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
       try {
     jjtree.closeNodeScope(jjtn001, true);
     jjtc001 = false;
-    jjtn001.name = tokenId.image;
+    jjtn001.jjtToken = tokenId;
       } finally {
     if (jjtc001) {
       jjtree.closeNodeScope(jjtn001, true);
@@ -396,7 +396,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
     try {
     jjtree.closeNodeScope(jjtn002,  isNotArray);
     jjtc002 = false;
-    jjtn002.name = tokenId.image;
+    jjtn002.jjtToken = tokenId;
     } finally {
     if (jjtc002) {
       jjtree.closeNodeScope(jjtn002,  isNotArray);
@@ -489,7 +489,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
         try {
         jjtree.closeNodeScope(jjtn001,  1);
         jjtc001 = false;
-        jjtn001.name = id.image;
+        jjtn001.jjtToken = id;
         } finally {
         if (jjtc001) {
           jjtree.closeNodeScope(jjtn001,  1);
@@ -507,7 +507,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
       try {
     jjtree.closeNodeScope(jjtn002,  isNotAnArray);
     jjtc002 = false;
-    jjtn002.name = id.image;
+    jjtn002.jjtToken = id;
       } finally {
     if (jjtc002) {
       jjtree.closeNodeScope(jjtn002,  isNotAnArray);
@@ -749,7 +749,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
       jjtree.closeNodeScope(jjtn001, true);
       jjtc001 = false;
       jjtn001.jjtToken = idToken;
-      jjtn001.name = jjtn001.jjtToken.image;
+      jjtn001.jjtToken = jjtn001.jjtToken;
       thisNode = jjtn001;
     } finally {
       if (jjtc001) {
@@ -856,7 +856,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
         try {
     jjtree.closeNodeScope(jjtn006,  1);
     jjtc006 = false;
-    jjtn006.name = idToken.image;
+    jjtn006.jjtToken = idToken;
         } finally {
     if (jjtc006) {
       jjtree.closeNodeScope(jjtn006,  1);
@@ -1145,7 +1145,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
         try {
       jjtree.closeNodeScope(jjtn001, true);
       jjtc001 = false;
-      jjtn001.name = idToken.image;
+      jjtn001.jjtToken = idToken;
         } finally {
       if (jjtc001) {
         jjtree.closeNodeScope(jjtn001, true);
@@ -1170,7 +1170,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
         try {
     jjtree.closeNodeScope(jjtn003,  1);
     jjtc003 = false;
-    jjtn003.name = idToken.image;
+    jjtn003.jjtToken = idToken;
         } finally {
     if (jjtc003) {
       jjtree.closeNodeScope(jjtn003,  1);
@@ -1193,7 +1193,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
     try {
   jjtree.closeNodeScope(jjtn004,  isAnId);
   jjtc004 = false;
-  jjtn004.name = idToken.image;
+  jjtn004.jjtToken = idToken;
     } finally {
   if (jjtc004) {
     jjtree.closeNodeScope(jjtn004,  isAnId);
@@ -1210,7 +1210,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
     try {
     jjtree.closeNodeScope(jjtn001, true);
     jjtc001 = false;
-    jjtn001.name = idToken.image;
+    jjtn001.jjtToken = idToken;
     } finally {
     if (jjtc001) {
       jjtree.closeNodeScope(jjtn001, true);

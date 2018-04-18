@@ -260,7 +260,7 @@ void Integer() :
     jjtc000 = false;
   }
 /*@egen*/
-  {
+  { 
   //jjtThis.value = sign + valueToken.image;
   }/*@bgen(jjtree)*/
   } finally {
@@ -340,7 +340,7 @@ void Function() :
         aVar = jjtn001;
         returnValueIsAnArray = true;
         {
-          jjtn001.name = functionId.image;
+          jjtn001.jjtToken = functionId;
         }	
       }/*@bgen(jjtree)*/
       } finally {
@@ -360,7 +360,7 @@ void Function() :
 /*@egen*/
     (< ASSIGN >
     {
-      jjtn002.name = functionId.image;
+      jjtn002.jjtToken = functionId;
     }
     functionId = < ID >
     )/*@bgen(jjtree)*/
@@ -401,7 +401,7 @@ void Function() :
   }
 /*@egen*/
   {
-    jjtn000.name = functionId.image;
+    jjtn000.jjtToken = functionId;
   }/*@bgen(jjtree)*/
   } catch (Throwable jjte000) {
     if (jjtc000) {
@@ -485,7 +485,7 @@ void Element()       : //Array or scalar element
   }
 /*@egen*/
   {
-    jjtn001.name = tokenId.image;
+    jjtn001.jjtToken = tokenId;
   }/*@bgen(jjtree)*/
   } finally {
     if (jjtc001) {
@@ -510,8 +510,8 @@ void Element()       : //Array or scalar element
     jjtc002 = false;
   }
 /*@egen*/
-  {
-    jjtn002.name = tokenId.image;
+  { 
+    jjtn002.jjtToken = tokenId;
   }/*@bgen(jjtree)*/
   } finally {
     if (jjtc002) {
@@ -601,7 +601,7 @@ void StmtCallOrAssign()       :
       }
 /*@egen*/
       {
-        jjtn001.name = id.image;
+        jjtn001.jjtToken = id;
       }/*@bgen(jjtree)*/
       } finally {
         if (jjtc001) {
@@ -627,7 +627,7 @@ void StmtCallOrAssign()       :
   }
 /*@egen*/
   {
-    jjtn002.name = id.image;
+    jjtn002.jjtToken = id;
   }/*@bgen(jjtree)*/
   } finally {
     if (jjtc002) {
@@ -893,7 +893,7 @@ void CallOrAccess()       :
 /*@egen*/
     {
       jjtn001.jjtToken = idToken;
-      jjtn001.name = jjtn001.jjtToken.image;
+      jjtn001.jjtToken = jjtn001.jjtToken;
       thisNode = jjtn001;
     }
     )/*@bgen(jjtree)*/
@@ -1019,7 +1019,7 @@ void CallOrAccess()       :
   }
 /*@egen*/
   {
-    jjtn006.name = idToken.image;
+    jjtn006.jjtToken = idToken;
   }/*@bgen(jjtree)*/
   } finally {
     if (jjtc006) {
@@ -1313,7 +1313,7 @@ void Access()       : //Array or scalar access
     }
 /*@egen*/
     {
-      jjtn001.name = idToken.image;
+      jjtn001.jjtToken = idToken;
     }/*@bgen(jjtree)*/
     } finally {
       if (jjtc001) {
@@ -1349,7 +1349,7 @@ void Access()       : //Array or scalar access
   }
 /*@egen*/
   {
-    jjtn003.name = idToken.image;
+    jjtn003.jjtToken = idToken;
   }/*@bgen(jjtree)*/
   } finally {
     if (jjtc003) {
@@ -1372,7 +1372,7 @@ try {
 }
 /*@egen*/
 {
-  jjtn004.name = idToken.image;
+  jjtn004.jjtToken = idToken;
 }/*@bgen(jjtree)*/
 } finally {
   if (jjtc004) {
@@ -1403,7 +1403,7 @@ void ScalarAccess()       :
   }
 /*@egen*/
   {
-    jjtn001.name = idToken.image;
+    jjtn001.jjtToken = idToken;
   }/*@bgen(jjtree)*/
   } finally {
     if (jjtc001) {

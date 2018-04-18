@@ -4,6 +4,8 @@ import java.util.List;
 
 import custom.Logger;
 import custom.YalMapper;
+import scope.ModuleScope;
+import semantic.SemanticAnalyzer;
 import yal2jvm.ASTModule;
 import yal2jvm.ParseException;
 import yal2jvm.SimpleNode;
@@ -19,7 +21,9 @@ public class Main {
 		LOGGER.info("Reading from standard input...");
 		new Yal2jvm(new java.io.FileInputStream(args[0]));
 		ASTModule module = Yal2jvm.Start();
-		module.dump("");
+		
+		SemanticAnalyzer.dump("", module);
+		//module.dump("");
 		//module.init();
 		//module.dump(" | ");
 		LOGGER.info("---");

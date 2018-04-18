@@ -16,7 +16,11 @@ class SimpleNode implements Node {
   public SimpleNode(int i) {
     id = i;
   }
-
+  
+  public Node[] getChildren(){
+	  return children;
+  }
+  
   public SimpleNode(Yal2jvm p, int i) {
     this(i);
     parser = p;
@@ -59,7 +63,9 @@ class SimpleNode implements Node {
      toString(String), otherwise overriding toString() is probably all
      you need to do. */
 
-  public String toString() { return Yal2jvmTreeConstants.jjtNodeName[id]; }
+  public String toString() { 
+	  return Yal2jvmTreeConstants.jjtNodeName[id] + " (" + jjtToken + ")"; 
+	  }
   public String toString(String prefix) { return prefix + toString(); }
 
   /* Override this method if you want to customize how the node dumps

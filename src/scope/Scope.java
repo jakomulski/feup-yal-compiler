@@ -1,3 +1,4 @@
+package scope;
 import java.util.Map;
 
 public abstract class Scope {
@@ -24,31 +25,4 @@ public abstract class Scope {
 }
 
 
-class ModuleScope extends Scope {
-	private Map<String, FunctionDesc> functions;
 
-	public ModuleScope() {
-		super(null);
-	}
-	
-	public void addFunction(String name, FunctionDesc desc){
-		this.functions.put(name, desc);
-	}
-	
-	@Override
-	public FunctionDesc getFunction(String name) {
-		return functions.get(name);
-	}
-	
-}
-
-class FunctionScope extends Scope {
-	public FunctionScope(ModuleScope parent) {
-		super(parent);
-	}
-
-	@Override
-	public FunctionDesc getFunction(String name) {
-		return parent.getFunction(name);
-	}
-}
