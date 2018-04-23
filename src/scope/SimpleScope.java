@@ -10,5 +10,9 @@ public class SimpleScope extends Scope {
 	public FunctionDesc getFunction(String name) {
 		return parent.getFunction(name);
 	}
-
+	
+	@Override
+	public boolean hasFunction(String name) {
+		return parent.hasFunction(name);
+	}
 }

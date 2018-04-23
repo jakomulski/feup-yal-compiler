@@ -19,11 +19,13 @@ public class Main {
 	
 	public static void main(String[] args) throws ParseException, FileNotFoundException {
 		LOGGER.info("Reading from standard input...");
-		new Yal2jvm(new java.io.FileInputStream(args[0]));
-		ASTModule module = Yal2jvm.Start();
+		//new Yal2jvm();
+		
+		String input = "./examples/programa3.yal";
+		SimpleNode module = new Yal2jvm(new java.io.FileInputStream(input)).Start();
 		
 		
-		module.dump("");
+		SemanticAnalyzer.dump("", module);
 		new SemanticAnalyzer(module).analyze();
 		//module.init();
 		//module.dump(" | ");

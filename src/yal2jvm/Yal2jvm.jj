@@ -2,7 +2,9 @@
 /*@egen*/options
 {
   LOOKAHEAD= 1;
-
+  STATIC = false;
+                         
+                        
                
                                       
 }
@@ -11,22 +13,32 @@ PARSER_BEGIN(Yal2jvm)
 package yal2jvm;
 import custom.Logger;
 
-
 public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants/*@egen*/
 {/*@bgen(jjtree)*/
-  protected static JJTYal2jvmState jjtree = new JJTYal2jvmState();
+  protected JJTYal2jvmState jjtree = new JJTYal2jvmState();
 
 /*@egen*/
   static final Logger LOGGER = Logger.INSTANCE;
-} 
- 
+
+  private void jjtreeOpenNodeScope(Node n)
+  {
+    ((SimpleNode)n).setLineNumber(getToken(1).beginLine);
+    //System.out.println();
+  } 
+
+  private void jjtreeCloseNodeScope(Node n)
+  {
+    //closeNodeHook();
+  }
+}
+
 PARSER_END(Yal2jvm)
 
 SKIP :
 {
-  " "  
+  " "
 | "\t"
-| "\n" 
+| "\n"
 | "\r"
 | < "//" (~[ "\n", "\r" ])*
     (
@@ -95,11 +107,12 @@ TOKEN : /* IDENTIFIERS */
 | < STRING : "\"" ([ "a"-"z", "A"-"Z", "0"-"9", ":", " ", "=" ])+ "\"" >
 }
 
-ASTModule Start()         :
+SimpleNode Start()         :
 {/*@bgen(jjtree) Module */
   ASTModule jjtn000 = new ASTModule(JJTMODULE);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
+  jjtreeOpenNodeScope(jjtn000);
 /*@egen*/}
 {/*@bgen(jjtree) Module */
   try {
@@ -140,6 +153,7 @@ ASTModule Start()         :
   {
     jjtree.closeNodeScope(jjtn000, true);
     jjtc000 = false;
+    jjtreeCloseNodeScope(jjtn000);
   }
 /*@egen*/
   {
@@ -162,6 +176,7 @@ ASTModule Start()         :
   } finally {
     if (jjtc000) {
       jjtree.closeNodeScope(jjtn000, true);
+      jjtreeCloseNodeScope(jjtn000);
     }
   }
 /*@egen*/
@@ -179,6 +194,7 @@ void Declaration()       :
       ASTDeclare jjtn002 = new ASTDeclare(JJTDECLARE);
       boolean jjtc002 = true;
       jjtree.openNodeScope(jjtn002);
+      jjtreeOpenNodeScope(jjtn002);
     }
     try {
 /*@egen*/
@@ -187,6 +203,7 @@ void Declaration()       :
         ASTArray jjtn001 = new ASTArray(JJTARRAY);
         boolean jjtc001 = true;
         jjtree.openNodeScope(jjtn001);
+        jjtreeOpenNodeScope(jjtn001);
       }
       try {
 /*@egen*/
@@ -208,6 +225,7 @@ void Declaration()       :
       } finally {
         if (jjtc001) {
           jjtree.closeNodeScope(jjtn001, true);
+          jjtreeCloseNodeScope(jjtn001);
         }
       }
 /*@egen*/       
@@ -230,6 +248,7 @@ void Declaration()       :
     } finally {
       if (jjtc002) {
         jjtree.closeNodeScope(jjtn002,  2);
+        jjtreeCloseNodeScope(jjtn002);
       }
     }
 /*@egen*/            
@@ -242,6 +261,7 @@ void Integer() :
   ASTInteger jjtn000 = new ASTInteger(JJTINTEGER);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
+  jjtreeOpenNodeScope(jjtn000);
 /*@egen*/
   Token signToken;
   String sign = "";
@@ -258,14 +278,17 @@ void Integer() :
   {
     jjtree.closeNodeScope(jjtn000, true);
     jjtc000 = false;
+    jjtreeCloseNodeScope(jjtn000);
   }
 /*@egen*/
-  { 
-  //jjtThis.value = sign + valueToken.image;
+  {
+    jjtn000.value = sign;
+  	jjtn000.jjtToken = valueToken;
   }/*@bgen(jjtree)*/
   } finally {
     if (jjtc000) {
       jjtree.closeNodeScope(jjtn000, true);
+      jjtreeCloseNodeScope(jjtn000);
     }
   }
 /*@egen*/
@@ -286,12 +309,14 @@ void ArraySize()       :
     ASTInteger jjtn001 = new ASTInteger(JJTINTEGER);
     boolean jjtc001 = true;
     jjtree.openNodeScope(jjtn001);
+    jjtreeOpenNodeScope(jjtn001);
   }
   try {
 /*@egen*/ jjtn001.jjtToken = < INTEGER >/*@bgen(jjtree)*/
   } finally {
     if (jjtc001) {
       jjtree.closeNodeScope(jjtn001, true);
+      jjtreeCloseNodeScope(jjtn001);
     }
   }
 /*@egen*/         
@@ -302,8 +327,9 @@ void Function() :
   ASTFunction jjtn000 = new ASTFunction(JJTFUNCTION);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
+  jjtreeOpenNodeScope(jjtn000);
 /*@egen*/
-  ASTArrayVariable aVar;
+  SimpleNode aVar;
   Token functionId = null;
   boolean returnValueIsAnArray = false;
 }
@@ -318,6 +344,7 @@ void Function() :
       ASTReturn jjtn003 = new ASTReturn(JJTRETURN);
       boolean jjtc003 = true;
       jjtree.openNodeScope(jjtn003);
+      jjtreeOpenNodeScope(jjtn003);
     }
     try {
 /*@egen*/ 
@@ -328,12 +355,14 @@ void Function() :
         ASTArrayVariable jjtn001 = new ASTArrayVariable(JJTARRAYVARIABLE);
         boolean jjtc001 = true;
         jjtree.openNodeScope(jjtn001);
+        jjtreeOpenNodeScope(jjtn001);
       }
       try {
 /*@egen*//*@bgen(jjtree)*/
       {
         jjtree.closeNodeScope(jjtn001, true);
         jjtc001 = false;
+        jjtreeCloseNodeScope(jjtn001);
       }
 /*@egen*/
       {
@@ -346,6 +375,7 @@ void Function() :
       } finally {
         if (jjtc001) {
           jjtree.closeNodeScope(jjtn001, true);
+          jjtreeCloseNodeScope(jjtn001);
         }
       }
 /*@egen*/
@@ -355,6 +385,7 @@ void Function() :
       ASTScalarVariable jjtn002 = new ASTScalarVariable(JJTSCALARVARIABLE);
       boolean jjtc002 = true;
       jjtree.openNodeScope(jjtn002);
+      jjtreeOpenNodeScope(jjtn002);
     }
     try {
 /*@egen*/
@@ -367,6 +398,7 @@ void Function() :
     } finally {
       if (jjtc002) {
         jjtree.closeNodeScope(jjtn002,  ! returnValueIsAnArray);
+        jjtreeCloseNodeScope(jjtn002);
       }
     }
 /*@egen*/ 
@@ -375,6 +407,7 @@ void Function() :
     } finally {
       if (jjtc003) {
         jjtree.closeNodeScope(jjtn003, true);
+        jjtreeCloseNodeScope(jjtn003);
       }
     }
 /*@egen*/ 
@@ -398,6 +431,7 @@ void Function() :
   {
     jjtree.closeNodeScope(jjtn000, true);
     jjtc000 = false;
+    jjtreeCloseNodeScope(jjtn000);
   }
 /*@egen*/
   {
@@ -420,6 +454,7 @@ void Function() :
   } finally {
     if (jjtc000) {
       jjtree.closeNodeScope(jjtn000, true);
+      jjtreeCloseNodeScope(jjtn000);
     }
   }
 /*@egen*/
@@ -430,6 +465,7 @@ void Parameters() :
   ASTParameters jjtn000 = new ASTParameters(JJTPARAMETERS);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
+  jjtreeOpenNodeScope(jjtn000);
 /*@egen*/}
 {/*@bgen(jjtree) Parameters */
   try {
@@ -460,6 +496,7 @@ void Parameters() :
   } finally {
     if (jjtc000) {
       jjtree.closeNodeScope(jjtn000, true);
+      jjtreeCloseNodeScope(jjtn000);
     }
   }
 /*@egen*/
@@ -476,12 +513,14 @@ void Element()       : //Array or scalar element
     ASTArrayVariable jjtn001 = new ASTArrayVariable(JJTARRAYVARIABLE);
     boolean jjtc001 = true;
     jjtree.openNodeScope(jjtn001);
+    jjtreeOpenNodeScope(jjtn001);
   }
   try {
 /*@egen*//*@bgen(jjtree)*/
   {
     jjtree.closeNodeScope(jjtn001, true);
     jjtc001 = false;
+    jjtreeCloseNodeScope(jjtn001);
   }
 /*@egen*/
   {
@@ -490,11 +529,12 @@ void Element()       : //Array or scalar element
   } finally {
     if (jjtc001) {
       jjtree.closeNodeScope(jjtn001, true);
+      jjtreeCloseNodeScope(jjtn001);
     }
   }
 /*@egen*/
                 
-  { 
+  {
     isNotArray = false;
   }
   )?/*@bgen(jjtree) #ScalarVariable( isNotArray) */
@@ -502,20 +542,23 @@ void Element()       : //Array or scalar element
     ASTScalarVariable jjtn002 = new ASTScalarVariable(JJTSCALARVARIABLE);
     boolean jjtc002 = true;
     jjtree.openNodeScope(jjtn002);
+    jjtreeOpenNodeScope(jjtn002);
   }
   try {
 /*@egen*//*@bgen(jjtree)*/
   {
     jjtree.closeNodeScope(jjtn002,  isNotArray);
     jjtc002 = false;
+    jjtreeCloseNodeScope(jjtn002);
   }
 /*@egen*/
-  { 
+  {
     jjtn002.jjtToken = tokenId;
   }/*@bgen(jjtree)*/
   } finally {
     if (jjtc002) {
       jjtree.closeNodeScope(jjtn002,  isNotArray);
+      jjtreeCloseNodeScope(jjtn002);
     }
   }
 /*@egen*/
@@ -527,6 +570,7 @@ void Stmtlst()             :
   ASTStatements jjtn000 = new ASTStatements(JJTSTATEMENTS);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
+  jjtreeOpenNodeScope(jjtn000);
 /*@egen*/}
 {/*@bgen(jjtree) Statements */
   try {
@@ -551,6 +595,7 @@ void Stmtlst()             :
   } finally {
     if (jjtc000) {
       jjtree.closeNodeScope(jjtn000, true);
+      jjtreeCloseNodeScope(jjtn000);
     }
   }
 /*@egen*/
@@ -592,12 +637,14 @@ void StmtCallOrAssign()       :
         ASTArrayAccess jjtn001 = new ASTArrayAccess(JJTARRAYACCESS);
         boolean jjtc001 = true;
         jjtree.openNodeScope(jjtn001);
+        jjtreeOpenNodeScope(jjtn001);
       }
       try {
 /*@egen*//*@bgen(jjtree)*/
       {
         jjtree.closeNodeScope(jjtn001,  1);
         jjtc001 = false;
+        jjtreeCloseNodeScope(jjtn001);
       }
 /*@egen*/
       {
@@ -606,6 +653,7 @@ void StmtCallOrAssign()       :
       } finally {
         if (jjtc001) {
           jjtree.closeNodeScope(jjtn001,  1);
+          jjtreeCloseNodeScope(jjtn001);
         }
       }
 /*@egen*/
@@ -618,12 +666,14 @@ void StmtCallOrAssign()       :
     ASTVariable jjtn002 = new ASTVariable(JJTVARIABLE);
     boolean jjtc002 = true;
     jjtree.openNodeScope(jjtn002);
+    jjtreeOpenNodeScope(jjtn002);
   }
   try {
 /*@egen*//*@bgen(jjtree)*/
   {
     jjtree.closeNodeScope(jjtn002,  isNotAnArray);
     jjtc002 = false;
+    jjtreeCloseNodeScope(jjtn002);
   }
 /*@egen*/
   {
@@ -632,6 +682,7 @@ void StmtCallOrAssign()       :
   } finally {
     if (jjtc002) {
       jjtree.closeNodeScope(jjtn002,  isNotAnArray);
+      jjtreeCloseNodeScope(jjtn002);
     }
   }
 /*@egen*/
@@ -641,6 +692,7 @@ void StmtCallOrAssign()       :
              ASTAssign jjtn003 = new ASTAssign(JJTASSIGN);
              boolean jjtc003 = true;
              jjtree.openNodeScope(jjtn003);
+             jjtreeOpenNodeScope(jjtn003);
            }
            try {
 /*@egen*/ Rhs()/*@bgen(jjtree)*/
@@ -661,6 +713,7 @@ void StmtCallOrAssign()       :
            } finally {
              if (jjtc003) {
                jjtree.closeNodeScope(jjtn003,  2);
+               jjtreeCloseNodeScope(jjtn003);
              }
            }
 /*@egen*/           
@@ -671,12 +724,14 @@ void StmtCallOrAssign()       :
     ASTVariable jjtn004 = new ASTVariable(JJTVARIABLE);
     boolean jjtc004 = true;
     jjtree.openNodeScope(jjtn004);
+    jjtreeOpenNodeScope(jjtn004);
   }
   try {
 /*@egen*//*@bgen(jjtree)*/
   {
     jjtree.closeNodeScope(jjtn004, true);
     jjtc004 = false;
+    jjtreeCloseNodeScope(jjtn004);
   }
 /*@egen*/
   {
@@ -685,33 +740,37 @@ void StmtCallOrAssign()       :
   } finally {
     if (jjtc004) {
       jjtree.closeNodeScope(jjtn004, true);
+      jjtreeCloseNodeScope(jjtn004);
     }
   }
 /*@egen*/
-            module = < ID >/*@bgen(jjtree) #Module( 1) */
+            module = < ID >/*@bgen(jjtree) #ModuleAccess( 1) */
   {
-    ASTModule jjtn005 = new ASTModule(JJTMODULE);
+    ASTModuleAccess jjtn005 = new ASTModuleAccess(JJTMODULEACCESS);
     boolean jjtc005 = true;
     jjtree.openNodeScope(jjtn005);
+    jjtreeOpenNodeScope(jjtn005);
   }
   try {
 /*@egen*//*@bgen(jjtree)*/
   {
     jjtree.closeNodeScope(jjtn005,  1);
     jjtc005 = false;
+    jjtreeCloseNodeScope(jjtn005);
   }
 /*@egen*/
-  { 
+  {
     node.jjtToken = module;
     jjtn005.jjtToken = id;
   }/*@bgen(jjtree)*/
   } finally {
     if (jjtc005) {
       jjtree.closeNodeScope(jjtn005,  1);
+      jjtreeCloseNodeScope(jjtn005);
     }
   }
 /*@egen*/
-            
+                  
 {
   isNotInModule = false;
 }
@@ -721,12 +780,14 @@ void StmtCallOrAssign()       :
   ASTVariable jjtn006 = new ASTVariable(JJTVARIABLE);
   boolean jjtc006 = true;
   jjtree.openNodeScope(jjtn006);
+  jjtreeOpenNodeScope(jjtn006);
 }
 try {
 /*@egen*//*@bgen(jjtree)*/
 {
   jjtree.closeNodeScope(jjtn006,  isNotInModule);
   jjtc006 = false;
+  jjtreeCloseNodeScope(jjtn006);
 }
 /*@egen*/
 {
@@ -735,6 +796,7 @@ try {
 } finally {
   if (jjtc006) {
     jjtree.closeNodeScope(jjtn006,  isNotInModule);
+    jjtreeCloseNodeScope(jjtn006);
   }
 }
 /*@egen*/
@@ -744,6 +806,7 @@ try {
   ASTCall jjtn007 = new ASTCall(JJTCALL);
   boolean jjtc007 = true;
   jjtree.openNodeScope(jjtn007);
+  jjtreeOpenNodeScope(jjtn007);
 }
 try {
 /*@egen*/
@@ -765,6 +828,7 @@ ArgumentList()/*@bgen(jjtree)*/
 } finally {
   if (jjtc007) {
     jjtree.closeNodeScope(jjtn007,  2);
+    jjtreeCloseNodeScope(jjtn007);
   }
 }
 /*@egen*/         
@@ -782,9 +846,10 @@ void Rhs()       :
   Token operator;
 }
 {
+  
   (	
     Term()
-    (
+   [
       (
         operator = < ARITH_OP >
       | operator = < BITWISE_OP >
@@ -795,12 +860,14 @@ void Rhs()       :
         ASTOperator jjtn001 = new ASTOperator(JJTOPERATOR);
         boolean jjtc001 = true;
         jjtree.openNodeScope(jjtn001);
+        jjtreeOpenNodeScope(jjtn001);
       }
       try {
 /*@egen*//*@bgen(jjtree)*/
       {
         jjtree.closeNodeScope(jjtn001,  2);
         jjtc001 = false;
+        jjtreeCloseNodeScope(jjtn001);
       }
 /*@egen*/
       {
@@ -809,17 +876,19 @@ void Rhs()       :
       } finally {
         if (jjtc001) {
           jjtree.closeNodeScope(jjtn001,  2);
+          jjtreeCloseNodeScope(jjtn001);
         }
       }
 /*@egen*/
                   
-  )?
+  ]
 )
 |/*@bgen(jjtree) #Array( 1) */
   {
     ASTArray jjtn002 = new ASTArray(JJTARRAY);
     boolean jjtc002 = true;
     jjtree.openNodeScope(jjtn002);
+    jjtreeOpenNodeScope(jjtn002);
   }
   try {
 /*@egen*/ Array()/*@bgen(jjtree)*/
@@ -840,14 +909,15 @@ void Rhs()       :
   } finally {
     if (jjtc002) {
       jjtree.closeNodeScope(jjtn002,  1);
+      jjtreeCloseNodeScope(jjtn002);
     }
   }
 /*@egen*/          
 }
 
-void Term()       :
+void Term()      :
 {
-	Token sign = null;
+  Token sign = null;
 }
 {
   (sign = < ADDSUB_OP >
@@ -856,32 +926,41 @@ void Term()       :
     ASTNegation jjtn002 = new ASTNegation(JJTNEGATION);
     boolean jjtc002 = true;
     jjtree.openNodeScope(jjtn002);
+    jjtreeOpenNodeScope(jjtn002);
   }
   try {
 /*@egen*/
-  ((/*@bgen(jjtree) Integer */
-    {
-      ASTInteger jjtn001 = new ASTInteger(JJTINTEGER);
-      boolean jjtc001 = true;
-      jjtree.openNodeScope(jjtn001);
-    }
-    try {
-/*@egen*/
-    jjtn001.jjtToken = < INTEGER >/*@bgen(jjtree)*/
-    } finally {
-      if (jjtc001) {
-        jjtree.closeNodeScope(jjtn001, true);
+  (
+    (/*@bgen(jjtree) Integer */
+      {
+        ASTInteger jjtn001 = new ASTInteger(JJTINTEGER);
+        boolean jjtc001 = true;
+        jjtree.openNodeScope(jjtn001);
+        jjtreeOpenNodeScope(jjtn001);
       }
-    }
+      try {
+/*@egen*/
+      jjtn001.jjtToken = < INTEGER >/*@bgen(jjtree)*/
+      } finally {
+        if (jjtc001) {
+          jjtree.closeNodeScope(jjtn001, true);
+          jjtreeCloseNodeScope(jjtn001);
+        }
+      }
 /*@egen*/         
-    //| Call() | Access()
-  | CallOrAccess()
- )/*@bgen(jjtree)*/
+      //| Call() | Access()
+    | CallOrAccess()
+  )/*@bgen(jjtree)*/
   {
     jjtree.closeNodeScope(jjtn002,  sign != null);
     jjtc002 = false;
+    jjtreeCloseNodeScope(jjtn002);
   }
-/*@egen*/{ jjtn002.jjtToken = sign; })/*@bgen(jjtree)*/
+/*@egen*/
+  {
+    jjtn002.jjtToken = sign;
+  }
+)/*@bgen(jjtree)*/
   } catch (Throwable jjte002) {
     if (jjtc002) {
       jjtree.clearNodeScope(jjtn002);
@@ -899,49 +978,53 @@ void Term()       :
   } finally {
     if (jjtc002) {
       jjtree.closeNodeScope(jjtn002,  sign != null);
+      jjtreeCloseNodeScope(jjtn002);
     }
   }
-/*@egen*/                       
+/*@egen*/                        
 }
 
 void CallOrAccess()       :
 {
   SimpleNode thisNode;
-  Token module; 
-  Token idToken; 
-} 
+  Token module;
+  Token idToken;
+}
 {
-  (/*@bgen(jjtree) Variable */
+  (    (/*@bgen(jjtree) Variable */
     {
       ASTVariable jjtn001 = new ASTVariable(JJTVARIABLE);
       boolean jjtc001 = true;
       jjtree.openNodeScope(jjtn001);
+      jjtreeOpenNodeScope(jjtn001);
     }
     try {
 /*@egen*/
-    (idToken = < ID >/*@bgen(jjtree)*/
+    (jjtn001.jjtToken = < ID >/*@bgen(jjtree)*/
     {
       jjtree.closeNodeScope(jjtn001, true);
       jjtc001 = false;
+      jjtreeCloseNodeScope(jjtn001);
     }
 /*@egen*/
     {
-      jjtn001.jjtToken = idToken;
-      jjtn001.jjtToken = jjtn001.jjtToken;
+      idToken = jjtn001.jjtToken;
       thisNode = jjtn001;
-    }
+    } 
     )/*@bgen(jjtree)*/
     } finally {
       if (jjtc001) {
         jjtree.closeNodeScope(jjtn001, true);
+        jjtreeCloseNodeScope(jjtn001);
       }
     }
-/*@egen*/          )
+/*@egen*/         )
   (/*@bgen(jjtree) #Call( 2) */
     {
       ASTCall jjtn002 = new ASTCall(JJTCALL);
       boolean jjtc002 = true;
       jjtree.openNodeScope(jjtn002);
+      jjtreeOpenNodeScope(jjtn002);
     }
     try {
 /*@egen*/
@@ -963,6 +1046,7 @@ void CallOrAccess()       :
     } finally {
       if (jjtc002) {
         jjtree.closeNodeScope(jjtn002,  2);
+        jjtreeCloseNodeScope(jjtn002);
       }
     }
 /*@egen*/         
@@ -973,6 +1057,7 @@ void CallOrAccess()       :
         ASTModule jjtn003 = new ASTModule(JJTMODULE);
         boolean jjtc003 = true;
         jjtree.openNodeScope(jjtn003);
+        jjtreeOpenNodeScope(jjtn003);
       }
       try {
 /*@egen*/
@@ -980,6 +1065,7 @@ void CallOrAccess()       :
       {
         jjtree.closeNodeScope(jjtn003,  1);
         jjtc003 = false;
+        jjtreeCloseNodeScope(jjtn003);
       }
 /*@egen*/
       {
@@ -990,6 +1076,7 @@ void CallOrAccess()       :
       } finally {
         if (jjtc003) {
           jjtree.closeNodeScope(jjtn003,  1);
+          jjtreeCloseNodeScope(jjtn003);
         }
       }
 /*@egen*/           
@@ -998,6 +1085,7 @@ void CallOrAccess()       :
     ASTCall jjtn004 = new ASTCall(JJTCALL);
     boolean jjtc004 = true;
     jjtree.openNodeScope(jjtn004);
+    jjtreeOpenNodeScope(jjtn004);
   }
   try {
 /*@egen*/
@@ -1019,6 +1107,7 @@ void CallOrAccess()       :
   } finally {
     if (jjtc004) {
       jjtree.closeNodeScope(jjtn004,  2);
+      jjtreeCloseNodeScope(jjtn004);
     }
   }
 /*@egen*/         
@@ -1027,43 +1116,49 @@ void CallOrAccess()       :
     ASTSizeof jjtn005 = new ASTSizeof(JJTSIZEOF);
     boolean jjtc005 = true;
     jjtree.openNodeScope(jjtn005);
+    jjtreeOpenNodeScope(jjtn005);
   }
   try {
 /*@egen*/ < SIZE >/*@bgen(jjtree)*/
   } finally {
     if (jjtc005) {
       jjtree.closeNodeScope(jjtn005,  1);
+      jjtreeCloseNodeScope(jjtn005);
     }
   }
 /*@egen*/           
 )
 |
 (
-  Index()/*@bgen(jjtree) #ArrayAccess( 1) */
+  Index()/*@bgen(jjtree) #ArrayAccess( 2) */
   {
     ASTArrayAccess jjtn006 = new ASTArrayAccess(JJTARRAYACCESS);
     boolean jjtc006 = true;
     jjtree.openNodeScope(jjtn006);
+    jjtreeOpenNodeScope(jjtn006);
   }
   try {
 /*@egen*//*@bgen(jjtree)*/
   {
-    jjtree.closeNodeScope(jjtn006,  1);
+    jjtree.closeNodeScope(jjtn006,  2);
     jjtc006 = false;
+    jjtreeCloseNodeScope(jjtn006);
   }
 /*@egen*/
   {
     jjtn006.jjtToken = idToken;
+    jjtn006.children = new Node[]{ jjtn006.children[1] };
   }/*@bgen(jjtree)*/
   } finally {
     if (jjtc006) {
-      jjtree.closeNodeScope(jjtn006,  1);
+      jjtree.closeNodeScope(jjtn006,  2);
+      jjtreeCloseNodeScope(jjtn006);
     }
   }
 /*@egen*/
-                 
+                  //in fact it is (1)
 )
-)?
+)?)
 }
 
 void Exprtest()               :
@@ -1071,12 +1166,13 @@ void Exprtest()               :
   ASTCondition jjtn000 = new ASTCondition(JJTCONDITION);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
+  jjtreeOpenNodeScope(jjtn000);
 /*@egen*/}
 {/*@bgen(jjtree) #Condition( 2) */
   try {
 /*@egen*/
   < LPAR >
-  Access() < RELA_OP > Rhs() < RPAR >/*@bgen(jjtree)*/
+  Access() jjtn000.jjtToken = < RELA_OP > Rhs() < RPAR >/*@bgen(jjtree)*/
   } catch (Throwable jjte000) {
     if (jjtc000) {
       jjtree.clearNodeScope(jjtn000);
@@ -1094,6 +1190,7 @@ void Exprtest()               :
   } finally {
     if (jjtc000) {
       jjtree.closeNodeScope(jjtn000,  2);
+      jjtreeCloseNodeScope(jjtn000);
     }
   }
 /*@egen*/
@@ -1104,6 +1201,7 @@ void While() :
   ASTWhile jjtn000 = new ASTWhile(JJTWHILE);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
+  jjtreeOpenNodeScope(jjtn000);
 /*@egen*/}
 {/*@bgen(jjtree) While */
   try {
@@ -1143,6 +1241,7 @@ void While() :
   } finally {
     if (jjtc000) {
       jjtree.closeNodeScope(jjtn000, true);
+      jjtreeCloseNodeScope(jjtn000);
     }
   }
 /*@egen*/
@@ -1153,6 +1252,7 @@ void If() :
   ASTIf jjtn000 = new ASTIf(JJTIF);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
+  jjtreeOpenNodeScope(jjtn000);
 /*@egen*/
 }
 {/*@bgen(jjtree) If */
@@ -1167,17 +1267,16 @@ void If() :
     LOGGER.error(e);
     error_skipto(LCHAVETA);
   }
-  
-    try
-    {
-      Stmtlst() < RCHAVETA >
-    }
-    catch (ParseException e)
-    {
-      LOGGER.error(e);
-      error_skipto(RCHAVETA);
-    }
-	(	  
+  try
+  {
+    Stmtlst() < RCHAVETA >
+  }
+  catch (ParseException e)
+  {
+    LOGGER.error(e);
+    error_skipto(RCHAVETA);
+  }
+  (
     try
     {
       < ELSE > < LCHAVETA >
@@ -1214,6 +1313,7 @@ void If() :
   } finally {
     if (jjtc000) {
       jjtree.closeNodeScope(jjtn000, true);
+      jjtreeCloseNodeScope(jjtn000);
     }
   }
 /*@egen*/
@@ -1231,6 +1331,7 @@ void ArgumentList() :
   ASTArgumentList jjtn000 = new ASTArgumentList(JJTARGUMENTLIST);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
+  jjtreeOpenNodeScope(jjtn000);
 /*@egen*/}
 {/*@bgen(jjtree) ArgumentList */
   try {
@@ -1268,6 +1369,7 @@ void ArgumentList() :
   } finally {
     if (jjtc000) {
       jjtree.closeNodeScope(jjtn000, true);
+      jjtreeCloseNodeScope(jjtn000);
     }
   }
 /*@egen*/
@@ -1281,6 +1383,7 @@ void Argument()       :
       ASTVariable jjtn001 = new ASTVariable(JJTVARIABLE);
       boolean jjtc001 = true;
       jjtree.openNodeScope(jjtn001);
+      jjtreeOpenNodeScope(jjtn001);
     }
     try {
 /*@egen*/
@@ -1288,6 +1391,7 @@ void Argument()       :
     } finally {
       if (jjtc001) {
         jjtree.closeNodeScope(jjtn001, true);
+        jjtreeCloseNodeScope(jjtn001);
       }
     }
 /*@egen*/          
@@ -1296,12 +1400,14 @@ void Argument()       :
       ASTString jjtn002 = new ASTString(JJTSTRING);
       boolean jjtc002 = true;
       jjtree.openNodeScope(jjtn002);
+      jjtreeOpenNodeScope(jjtn002);
     }
     try {
 /*@egen*/ jjtn002.jjtToken = < STRING >/*@bgen(jjtree)*/
     } finally {
       if (jjtc002) {
         jjtree.closeNodeScope(jjtn002, true);
+        jjtreeCloseNodeScope(jjtn002);
       }
     }
 /*@egen*/        
@@ -1310,12 +1416,14 @@ void Argument()       :
       ASTInteger jjtn003 = new ASTInteger(JJTINTEGER);
       boolean jjtc003 = true;
       jjtree.openNodeScope(jjtn003);
+      jjtreeOpenNodeScope(jjtn003);
     }
     try {
 /*@egen*/ jjtn003.jjtToken = < INTEGER >/*@bgen(jjtree)*/
     } finally {
       if (jjtc003) {
         jjtree.closeNodeScope(jjtn003, true);
+        jjtreeCloseNodeScope(jjtn003);
       }
     }
 /*@egen*/         
@@ -1328,8 +1436,16 @@ void Access()       : //Array or scalar access
   boolean isAnId = true;
 }
 {
-  idToken = < ID >
-  (
+  idToken = < ID >/*@bgen(jjtree) #Variable( isAnId) */
+  {
+    ASTVariable jjtn004 = new ASTVariable(JJTVARIABLE);
+    boolean jjtc004 = true;
+    jjtree.openNodeScope(jjtn004);
+    jjtreeOpenNodeScope(jjtn004);
+  }
+  try {
+/*@egen*/
+  (    (
     {
       isAnId = false;
     }
@@ -1338,12 +1454,14 @@ void Access()       : //Array or scalar access
       ASTVariable jjtn001 = new ASTVariable(JJTVARIABLE);
       boolean jjtc001 = true;
       jjtree.openNodeScope(jjtn001);
+      jjtreeOpenNodeScope(jjtn001);
     }
     try {
 /*@egen*//*@bgen(jjtree)*/
     {
       jjtree.closeNodeScope(jjtn001, true);
       jjtc001 = false;
+      jjtreeCloseNodeScope(jjtn001);
     }
 /*@egen*/
     {
@@ -1352,6 +1470,7 @@ void Access()       : //Array or scalar access
     } finally {
       if (jjtc001) {
         jjtree.closeNodeScope(jjtn001, true);
+        jjtreeCloseNodeScope(jjtn001);
       }
     }
 /*@egen*/
@@ -1360,12 +1479,14 @@ void Access()       : //Array or scalar access
                 ASTSizeof jjtn002 = new ASTSizeof(JJTSIZEOF);
                 boolean jjtc002 = true;
                 jjtree.openNodeScope(jjtn002);
+                jjtreeOpenNodeScope(jjtn002);
               }
               try {
 /*@egen*/ < SIZE >/*@bgen(jjtree)*/
               } finally {
                 if (jjtc002) {
                   jjtree.closeNodeScope(jjtn002,  1);
+                  jjtreeCloseNodeScope(jjtn002);
                 }
               }
 /*@egen*/           
@@ -1374,12 +1495,14 @@ void Access()       : //Array or scalar access
     ASTArrayAccess jjtn003 = new ASTArrayAccess(JJTARRAYACCESS);
     boolean jjtc003 = true;
     jjtree.openNodeScope(jjtn003);
+    jjtreeOpenNodeScope(jjtn003);
   }
   try {
 /*@egen*//*@bgen(jjtree)*/
   {
     jjtree.closeNodeScope(jjtn003,  1);
     jjtc003 = false;
+    jjtreeCloseNodeScope(jjtn003);
   }
 /*@egen*/
   {
@@ -1388,34 +1511,42 @@ void Access()       : //Array or scalar access
   } finally {
     if (jjtc003) {
       jjtree.closeNodeScope(jjtn003,  1);
+      jjtreeCloseNodeScope(jjtn003);
     }
   }
 /*@egen*/
                  
-)?/*@bgen(jjtree) #Variable( isAnId) */
-{
-  ASTVariable jjtn004 = new ASTVariable(JJTVARIABLE);
-  boolean jjtc004 = true;
-  jjtree.openNodeScope(jjtn004);
-}
-try {
-/*@egen*//*@bgen(jjtree)*/
+)?/*@bgen(jjtree)*/
 {
   jjtree.closeNodeScope(jjtn004,  isAnId);
   jjtc004 = false;
+  jjtreeCloseNodeScope(jjtn004);
 }
 /*@egen*/
 {
   jjtn004.jjtToken = idToken;
-}/*@bgen(jjtree)*/
-} finally {
-  if (jjtc004) {
-    jjtree.closeNodeScope(jjtn004,  isAnId);
+})/*@bgen(jjtree)*/
+  } catch (Throwable jjte004) {
+    if (jjtc004) {
+      jjtree.clearNodeScope(jjtn004);
+      jjtc004 = false;
+    } else {
+      jjtree.popNode();
+    }
+    if (jjte004 instanceof RuntimeException) {
+      throw (RuntimeException)jjte004;
+    }
+    if (jjte004 instanceof ParseException) {
+      throw (ParseException)jjte004;
+    }
+    throw (Error)jjte004;
+  } finally {
+    if (jjtc004) {
+      jjtree.closeNodeScope(jjtn004,  isAnId);
+      jjtreeCloseNodeScope(jjtn004);
+    }
   }
-}
-/*@egen*/
-
-                 
+/*@egen*/                 
 }
 
 void ScalarAccess()       :
@@ -1428,12 +1559,14 @@ void ScalarAccess()       :
     ASTVariable jjtn001 = new ASTVariable(JJTVARIABLE);
     boolean jjtc001 = true;
     jjtree.openNodeScope(jjtn001);
+    jjtreeOpenNodeScope(jjtn001);
   }
   try {
 /*@egen*//*@bgen(jjtree)*/
   {
     jjtree.closeNodeScope(jjtn001, true);
     jjtc001 = false;
+    jjtreeCloseNodeScope(jjtn001);
   }
 /*@egen*/
   {
@@ -1442,6 +1575,7 @@ void ScalarAccess()       :
   } finally {
     if (jjtc001) {
       jjtree.closeNodeScope(jjtn001, true);
+      jjtreeCloseNodeScope(jjtn001);
     }
   }
 /*@egen*/
@@ -1452,12 +1586,14 @@ void ScalarAccess()       :
         ASTSizeof jjtn002 = new ASTSizeof(JJTSIZEOF);
         boolean jjtc002 = true;
         jjtree.openNodeScope(jjtn002);
+        jjtreeOpenNodeScope(jjtn002);
       }
       try {
 /*@egen*/ < SIZE >/*@bgen(jjtree)*/
       } finally {
         if (jjtc002) {
           jjtree.closeNodeScope(jjtn002,  1);
+          jjtreeCloseNodeScope(jjtn002);
         }
       }
 /*@egen*/           
@@ -1469,6 +1605,7 @@ void Index() :
   ASTIndex jjtn000 = new ASTIndex(JJTINDEX);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
+  jjtreeOpenNodeScope(jjtn000);
 /*@egen*/}
 {/*@bgen(jjtree) Index */
   try {
@@ -1482,6 +1619,7 @@ void Index() :
   } finally {
     if (jjtc000) {
       jjtree.closeNodeScope(jjtn000, true);
+      jjtreeCloseNodeScope(jjtn000);
     }
   }
 /*@egen*/
@@ -1493,19 +1631,21 @@ void error_skipto(int kind)
 ASTerror_skipto jjtn000 = new ASTerror_skipto(JJTERROR_SKIPTO);
 boolean jjtc000 = true;
 jjtree.openNodeScope(jjtn000);
+jjtreeOpenNodeScope(jjtn000);
 try {
 /*@egen*/
   Token t;
   do
   {
-    if(kind != RCHAVETA && token.next != null && token.next.kind == RCHAVETA)
-    	break;
+    if (kind != RCHAVETA && token.next != null && token.next.kind == RCHAVETA) 
+    break;
     t = getNextToken();
   }
   while (t.kind != kind);/*@bgen(jjtree)*/
 } finally {
   if (jjtc000) {
     jjtree.closeNodeScope(jjtn000, true);
+    jjtreeCloseNodeScope(jjtn000);
   }
 }
 /*@egen*/

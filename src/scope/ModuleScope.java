@@ -19,6 +19,11 @@ public class ModuleScope extends Scope {
 	public FunctionDesc getFunction(String name) {
 		return functions.get(name);
 	}
+	
+	@Override
+	public boolean hasFunction(String name) {
+		return functions.containsKey(name);
+	}
 
 	@Override
 	public String toString() {

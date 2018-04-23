@@ -17,6 +17,16 @@ public abstract class Scope {
 		return null;
 	};
 	
+	public boolean hasVariable(String name) {
+		if(this.variables.containsKey(name))
+			return true;
+		if(parent != null)
+			return parent.hasVariable(name);
+		return false;
+	};
+	
+	
+	
 	public void addVariable(String name, VariableDesc desc){
 		this.variables.put(name, desc);
 	}
@@ -26,6 +36,7 @@ public abstract class Scope {
 	}
 	
 	public abstract FunctionDesc getFunction(String name);
+	public abstract boolean hasFunction(String name);
 
 	@Override
 	public String toString() {

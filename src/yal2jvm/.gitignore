@@ -35,3 +35,9 @@
 /ASTDeclare.java
 /ASTNeg.java
 /ASTNegation.java
+/ASTModuleAccess.java
+/ASTFunctionAccess.java
+/ASTjjtreeCloseNodeScope.java
+/ASTjjtreeOpenNodeScope.java
+/ASTTerm.java
+/ASTVoid.java

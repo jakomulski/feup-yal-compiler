@@ -1,7 +1,9 @@
 options
 {
   LOOKAHEAD= 1;
-
+  STATIC = false;
+  NODE_SCOPE_HOOK = true;
+  //TRACK_TOKENS = true;
   MULTI = true;
   JJTREE_OUTPUT_DIRECTORY = "yal2jvm";
 }
@@ -10,19 +12,29 @@ PARSER_BEGIN(Yal2jvm)
 package yal2jvm;
 import custom.Logger;
 
-
 public class Yal2jvm
 {
   static final Logger LOGGER = Logger.INSTANCE;
-} 
- 
+
+  private void jjtreeOpenNodeScope(Node n)
+  {
+    ((SimpleNode)n).setLineNumber(getToken(1).beginLine);
+    //System.out.println();
+  } 
+
+  private void jjtreeCloseNodeScope(Node n)
+  {
+    //closeNodeHook();
+  }
+}
+
 PARSER_END(Yal2jvm)
 
 SKIP :
 {
-  " "  
+  " "
 | "\t"
-| "\n" 
+| "\n"
 | "\r"
 | < "//" (~[ "\n", "\r" ])*
     (
@@ -91,7 +103,7 @@ TOKEN : /* IDENTIFIERS */
 | < STRING : "\"" ([ "a"-"z", "A"-"Z", "0"-"9", ":", " ", "=" ])+ "\"" >
 }
 
-ASTModule Start() #Module :
+SimpleNode Start() #Module :
 {}
 {
   < MODULE > jjtThis.jjtToken = < ID > < LCHAVETA >
@@ -160,8 +172,9 @@ void Integer() :
     sign = signToken.image;
   }
   )? valueToken = < INTEGER >
-  { 
-  //jjtThis.value = sign + valueToken.image;
+  {
+    jjtThis.value = sign;
+  	jjtThis.jjtToken = valueToken;
   }
 }
 
@@ -180,7 +193,7 @@ void ArraySize() #void :
 
 void Function() :
 {
-  ASTArrayVariable aVar;
+  SimpleNode aVar;
   Token functionId = null;
   boolean returnValueIsAnArray = false;
 }
@@ -256,11 +269,11 @@ void Element() #void : //Array or scalar element
     jjtThis.jjtToken = tokenId;
   }
   #ArrayVariable
-  { 
+  {
     isNotArray = false;
   }
   )?
-  { 
+  {
     jjtThis.jjtToken = tokenId;
   }
   #ScalarVariable(isNotArray)
@@ -326,11 +339,11 @@ void StmtCallOrAssign() #void :
     node = jjtThis;
   }
   #Variable module = < ID >
-  { 
+  {
     node.jjtToken = module;
     jjtThis.jjtToken = id;
   }
-  #Module(1)
+  #ModuleAccess(1)
 {
   isNotInModule = false;
 }
@@ -356,9 +369,10 @@ void Rhs() #void :
   Token operator;
 }
 {
+  
   (	
     Term()
-    (
+   [
       (
         operator = < ARITH_OP >
       | operator = < BITWISE_OP >
@@ -369,40 +383,44 @@ void Rhs() #void :
         jjtThis.jjtToken = operator;
       }
       #Operator(2)
-  )?
+  ]
 )
 | Array() #Array(1)
 }
 
-void Term() #void :
+void Term() #void:
 {
-	Token sign = null;
+  Token sign = null;
 }
 {
   (sign = < ADDSUB_OP >
   )?
-  ((
-    jjtThis.jjtToken = < INTEGER > #Integer
-    //| Call() | Access()
-  | CallOrAccess()
- ){ jjtThis.jjtToken = sign; })#Negation(sign != null)
+  (
+    (
+      jjtThis.jjtToken = < INTEGER > #Integer
+      //| Call() | Access()
+    | CallOrAccess()
+  )
+  {
+    jjtThis.jjtToken = sign;
+  }
+) #Negation(sign != null)
 }
 
 void CallOrAccess() #void :
 {
   SimpleNode thisNode;
-  Token module; 
-  Token idToken; 
-} 
+  Token module;
+  Token idToken;
+}
 {
-  (
-    (idToken = < ID >
+  (    (
+    (jjtThis.jjtToken = < ID >
     {
-      jjtThis.jjtToken = idToken;
-      jjtThis.jjtToken = jjtThis.jjtToken;
+      idToken = jjtThis.jjtToken;
       thisNode = jjtThis;
-    }
-    ) #Variable)
+    } 
+    )#Variable)
   (
     ArgumentList() #Call(2)
 | "."
@@ -423,17 +441,18 @@ void CallOrAccess() #void :
   Index()
   {
     jjtThis.jjtToken = idToken;
+    jjtThis.children = new Node[]{ jjtThis.children[1] };
   }
-  #ArrayAccess(1)
+  #ArrayAccess(2) //in fact it is (1)
 )
-)?
+)?)
 }
 
 void Exprtest() #Condition(2) :
 {}
 {
   < LPAR >
-  Access() < RELA_OP > Rhs() < RPAR >
+  Access() jjtThis.jjtToken = < RELA_OP > Rhs() < RPAR >
 }
 
 void While() :
@@ -472,17 +491,16 @@ void If() :
     LOGGER.error(e);
     error_skipto(LCHAVETA);
   }
-  
-    try
-    {
-      Stmtlst() < RCHAVETA >
-    }
-    catch (ParseException e)
-    {
-      LOGGER.error(e);
-      error_skipto(RCHAVETA);
-    }
-	(	  
+  try
+  {
+    Stmtlst() < RCHAVETA >
+  }
+  catch (ParseException e)
+  {
+    LOGGER.error(e);
+    error_skipto(RCHAVETA);
+  }
+  (
     try
     {
       < ELSE > < LCHAVETA >
@@ -549,7 +567,7 @@ void Access() #void : //Array or scalar access
 }
 {
   idToken = < ID >
-  (
+  (    (
     {
       isAnId = false;
     }
@@ -566,9 +584,7 @@ void Access() #void : //Array or scalar access
 )?
 {
   jjtThis.jjtToken = idToken;
-}
-
-#Variable(isAnId)
+})#Variable(isAnId)
 }
 
 void ScalarAccess() #void :
@@ -603,8 +619,8 @@ void error_skipto(int kind)
   Token t;
   do
   {
-    if(kind != RCHAVETA && token.next != null && token.next.kind == RCHAVETA)
-    	break;
+    if (kind != RCHAVETA && token.next != null && token.next.kind == RCHAVETA) 
+    break;
     t = getNextToken();
   }
   while (t.kind != kind);

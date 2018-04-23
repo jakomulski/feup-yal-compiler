@@ -17,17 +17,18 @@ public interface Yal2jvmTreeConstants
   public int JJTARRAYACCESS = 11;
   public int JJTVARIABLE = 12;
   public int JJTASSIGN = 13;
-  public int JJTCALL = 14;
-  public int JJTOPERATOR = 15;
-  public int JJTNEGATION = 16;
-  public int JJTSIZEOF = 17;
-  public int JJTCONDITION = 18;
-  public int JJTWHILE = 19;
-  public int JJTIF = 20;
-  public int JJTARGUMENTLIST = 21;
-  public int JJTSTRING = 22;
-  public int JJTINDEX = 23;
-  public int JJTERROR_SKIPTO = 24;
+  public int JJTMODULEACCESS = 14;
+  public int JJTCALL = 15;
+  public int JJTOPERATOR = 16;
+  public int JJTNEGATION = 17;
+  public int JJTSIZEOF = 18;
+  public int JJTCONDITION = 19;
+  public int JJTWHILE = 20;
+  public int JJTIF = 21;
+  public int JJTARGUMENTLIST = 22;
+  public int JJTSTRING = 23;
+  public int JJTINDEX = 24;
+  public int JJTERROR_SKIPTO = 25;
 
 
   public String[] jjtNodeName = {
@@ -45,6 +46,7 @@ public interface Yal2jvmTreeConstants
     "ArrayAccess",
     "Variable",
     "Assign",
+    "ModuleAccess",
     "Call",
     "Operator",
     "Negation",
@@ -58,4 +60,4 @@ public interface Yal2jvmTreeConstants
     "error_skipto",
   };
 }
-/* JavaCC - OriginalChecksum=20b297eb92fd1949f585506a9a0a121b (do not edit this line) */
+/* JavaCC - OriginalChecksum=0cc1f03a30eb149e0096205d981d15ee (do not edit this line) */

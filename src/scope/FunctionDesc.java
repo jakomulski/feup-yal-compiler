@@ -13,6 +13,10 @@ public class FunctionDesc {
 	public VariableType getReturnType() {
 		return returnType;
 	}
+	
+	public int getParamsNum(){
+		return arumentsTypes.size();
+	}
 
 	public void setReturnType(VariableType returnType) {
 		this.returnType = returnType;
