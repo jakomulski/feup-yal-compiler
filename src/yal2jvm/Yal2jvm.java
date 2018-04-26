@@ -4,17 +4,27 @@ import custom.Logger;
 
 public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmConstants {/*@bgen(jjtree)*/
   protected JJTYal2jvmState jjtree = new JJTYal2jvmState();static final Logger LOGGER = Logger.INSTANCE;
-
   private void jjtreeOpenNodeScope(Node n)
   {
     ((SimpleNode)n).setLineNumber(getToken(1).beginLine);
-    //System.out.println();
   }
 
   private void jjtreeCloseNodeScope(Node n)
   {
     //closeNodeHook();
   }
+
+  void error_skipto(int kind)
+{
+  Token t;
+  do
+  {
+    if (kind != RCHAVETA && token.next != null && token.next.kind == RCHAVETA)
+    break;
+    t = getNextToken();
+  }
+  while (t.kind != kind);
+}
 
   final public SimpleNode Start() throws ParseException {
  /*@bgen(jjtree) Module */
@@ -810,7 +820,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
         jj_consume_token(-1);
         throw new ParseException();
       }
-    jjtree.closeNodeScope(jjtn002,  sign != null);
+    jjtree.closeNodeScope(jjtn002,  sign != null && sign . image . equals ( "-" ));
     jjtc002 = false;
     jjtreeCloseNodeScope(jjtn002);
     jjtn002.jjtToken = sign;
@@ -830,7 +840,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
     {if (true) throw (Error)jjte002;}
     } finally {
     if (jjtc002) {
-      jjtree.closeNodeScope(jjtn002,  sign != null);
+      jjtree.closeNodeScope(jjtn002,  sign != null && sign . image . equals ( "-" ));
       jjtreeCloseNodeScope(jjtn002);
     }
     }
@@ -1421,28 +1431,6 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
       jjtreeCloseNodeScope(jjtn000);
     }
     }
-  }
-
-  void error_skipto(int kind) throws ParseException {
- /*@bgen(jjtree) error_skipto */
-ASTerror_skipto jjtn000 = new ASTerror_skipto(JJTERROR_SKIPTO);
-boolean jjtc000 = true;
-jjtree.openNodeScope(jjtn000);
-jjtreeOpenNodeScope(jjtn000);
-try {Token t;
-  do
-  {
-    if (kind != RCHAVETA && token.next != null && token.next.kind == RCHAVETA)
-    break;
-    t = getNextToken();
-  }
-  while (t.kind != kind);/*@bgen(jjtree)*/
-} finally {
-  if (jjtc000) {
-    jjtree.closeNodeScope(jjtn000, true);
-    jjtreeCloseNodeScope(jjtn000);
-  }
-}
   }
 
   /** Generated Token Manager. */

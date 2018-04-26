@@ -15,17 +15,27 @@ import custom.Logger;
 public class Yal2jvm
 {
   static final Logger LOGGER = Logger.INSTANCE;
-
   private void jjtreeOpenNodeScope(Node n)
   {
     ((SimpleNode)n).setLineNumber(getToken(1).beginLine);
-    //System.out.println();
   } 
 
   private void jjtreeCloseNodeScope(Node n)
   {
     //closeNodeHook();
   }
+
+  void error_skipto(int kind)
+{
+  Token t;
+  do
+  {
+    if (kind != RCHAVETA && token.next != null && token.next.kind == RCHAVETA) 
+    break;
+    t = getNextToken();
+  }
+  while (t.kind != kind);
+}
 }
 
 PARSER_END(Yal2jvm)
@@ -398,13 +408,12 @@ void Term() #void:
   (
     (
       jjtThis.jjtToken = < INTEGER > #Integer
-      //| Call() | Access()
     | CallOrAccess()
   )
   {
     jjtThis.jjtToken = sign;
   }
-) #Negation(sign != null)
+) #Negation(sign != null && sign.image.equals("-"))
 }
 
 void CallOrAccess() #void :
@@ -613,15 +622,15 @@ void Index() :
   "]"
 }
 
-JAVACODE 
-void error_skipto(int kind)
-{
-  Token t;
-  do
-  {
-    if (kind != RCHAVETA && token.next != null && token.next.kind == RCHAVETA) 
-    break;
-    t = getNextToken();
-  }
-  while (t.kind != kind);
-}
+//JAVACODE 
+//void error_skipto(int kind)
+//{
+//  Token t;
+//  do
+//  {
+//    if (kind != RCHAVETA && token.next != null && token.next.kind == RCHAVETA) 
+//    break;
+//    t = getNextToken();
+//  }
+//  while (t.kind != kind);
+//}

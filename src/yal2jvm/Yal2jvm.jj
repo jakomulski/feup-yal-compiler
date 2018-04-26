@@ -19,17 +19,27 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants/*@egen*/
 
 /*@egen*/
   static final Logger LOGGER = Logger.INSTANCE;
-
   private void jjtreeOpenNodeScope(Node n)
   {
     ((SimpleNode)n).setLineNumber(getToken(1).beginLine);
-    //System.out.println();
   } 
 
   private void jjtreeCloseNodeScope(Node n)
   {
     //closeNodeHook();
   }
+
+  void error_skipto(int kind)
+{
+  Token t;
+  do
+  {
+    if (kind != RCHAVETA && token.next != null && token.next.kind == RCHAVETA) 
+    break;
+    t = getNextToken();
+  }
+  while (t.kind != kind);
+}
 }
 
 PARSER_END(Yal2jvm)
@@ -921,7 +931,7 @@ void Term()      :
 }
 {
   (sign = < ADDSUB_OP >
-  )?/*@bgen(jjtree) #Negation( sign != null) */
+  )?/*@bgen(jjtree) #Negation( sign != null && sign . image . equals ( "-" )) */
   {
     ASTNegation jjtn002 = new ASTNegation(JJTNEGATION);
     boolean jjtc002 = true;
@@ -948,11 +958,10 @@ void Term()      :
         }
       }
 /*@egen*/         
-      //| Call() | Access()
     | CallOrAccess()
   )/*@bgen(jjtree)*/
   {
-    jjtree.closeNodeScope(jjtn002,  sign != null);
+    jjtree.closeNodeScope(jjtn002,  sign != null && sign . image . equals ( "-" ));
     jjtc002 = false;
     jjtreeCloseNodeScope(jjtn002);
   }
@@ -977,11 +986,11 @@ void Term()      :
     throw (Error)jjte002;
   } finally {
     if (jjtc002) {
-      jjtree.closeNodeScope(jjtn002,  sign != null);
+      jjtree.closeNodeScope(jjtn002,  sign != null && sign . image . equals ( "-" ));
       jjtreeCloseNodeScope(jjtn002);
     }
   }
-/*@egen*/                        
+/*@egen*/                                                  
 }
 
 void CallOrAccess()       :
@@ -1625,28 +1634,15 @@ void Index() :
 /*@egen*/
 }
 
-JAVACODE 
-void error_skipto(int kind)
-{/*@bgen(jjtree) error_skipto */
-ASTerror_skipto jjtn000 = new ASTerror_skipto(JJTERROR_SKIPTO);
-boolean jjtc000 = true;
-jjtree.openNodeScope(jjtn000);
-jjtreeOpenNodeScope(jjtn000);
-try {
-/*@egen*/
-  Token t;
-  do
-  {
-    if (kind != RCHAVETA && token.next != null && token.next.kind == RCHAVETA) 
-    break;
-    t = getNextToken();
-  }
-  while (t.kind != kind);/*@bgen(jjtree)*/
-} finally {
-  if (jjtc000) {
-    jjtree.closeNodeScope(jjtn000, true);
-    jjtreeCloseNodeScope(jjtn000);
-  }
-}
-/*@egen*/
-}
+//JAVACODE 
+//void error_skipto(int kind)
+//{
+//  Token t;
+//  do
+//  {
+//    if (kind != RCHAVETA && token.next != null && token.next.kind == RCHAVETA) 
+//    break;
+//    t = getNextToken();
+//  }
+//  while (t.kind != kind);
+//}

@@ -11,11 +11,17 @@ public enum ScopeFactory {
 		return rootScope;
 	}
 	public Scope createSimpleScope(Scope scope){
-		if(scope.getClass() == ModuleScope.class)
+		if(scope.getClass().equals(ModuleScope.class))
 			return new SimpleScope(scope);
 		
 		if(moreScopes)
 			return new SimpleScope(scope);
 		return scope;
 	}
+	
+	public BlockedSimpleScope createBlockedScope(Scope scope){
+		return new BlockedSimpleScope(scope);
+	}
+	
+	
 }

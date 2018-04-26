@@ -28,7 +28,6 @@ public interface Yal2jvmTreeConstants
   public int JJTARGUMENTLIST = 22;
   public int JJTSTRING = 23;
   public int JJTINDEX = 24;
-  public int JJTERROR_SKIPTO = 25;
 
 
   public String[] jjtNodeName = {
@@ -57,7 +56,6 @@ public interface Yal2jvmTreeConstants
     "ArgumentList",
     "String",
     "Index",
-    "error_skipto",
   };
 }
-/* JavaCC - OriginalChecksum=0cc1f03a30eb149e0096205d981d15ee (do not edit this line) */
+/* JavaCC - OriginalChecksum=77b31eacc31ff3f03e64f5f4eb5126f0 (do not edit this line) */

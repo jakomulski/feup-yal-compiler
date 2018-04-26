@@ -1,12 +1,36 @@
 package scope;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
+import java.util.function.Supplier;
+
+
+
 
 public abstract class Scope {
 	Scope parent;
 	protected Map<String, VariableDesc> variables = new HashMap<>();
 	public Scope(Scope parent){
 		this.parent = parent;
+	}
+	
+	public void mergeInitialized(BlockedSimpleScope scope, BlockedSimpleScope ... args){
+		
+		scope.blocked.forEach((k,v)->{
+			boolean isInitialized = true;
+			if(v.isInitialized()){
+				for(BlockedSimpleScope sc : args)
+					if(!sc.blocked.containsKey(k) || !sc.blocked.get(k).isInitialized())
+						isInitialized = false;
+			}
+			else{
+				isInitialized = false;
+			}
+			if(isInitialized)
+				this.getVariable(k).initialize();
+		});
+		
 	}
 	
 	public VariableDesc getVariable(String name){
@@ -26,7 +50,6 @@ public abstract class Scope {
 	};
 	
 	
-	
 	public void addVariable(String name, VariableDesc desc){
 		this.variables.put(name, desc);
 	}
@@ -40,6 +63,7 @@ public abstract class Scope {
 
 	@Override
 	public String toString() {
+		
 		if(parent != null){
 			return "variables = " + variables + "\n" + parent.toString();
 		}

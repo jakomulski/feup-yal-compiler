@@ -1,16 +1,14 @@
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.List;
 
 import custom.Logger;
-import custom.YalMapper;
+
 import scope.ModuleScope;
-import semantic.SemanticAnalyzer;
-import yal2jvm.ASTModule;
+import semantic.Common;
+import semantic.ModuleAnalyzer;
 import yal2jvm.ParseException;
 import yal2jvm.SimpleNode;
 import yal2jvm.Yal2jvm;
-import yal2jvm.Yal2jvmTreeConstants;
+
 
 public class Main {
 	public static final Logger LOGGER = Logger.INSTANCE;
@@ -20,15 +18,14 @@ public class Main {
 	public static void main(String[] args) throws ParseException, FileNotFoundException {
 		LOGGER.info("Reading from standard input...");
 		//new Yal2jvm();
-		
 		String input = "./examples/programa3.yal";
 		SimpleNode module = new Yal2jvm(new java.io.FileInputStream(input)).Start();
 		
 		
-		SemanticAnalyzer.dump("", module);
-		new SemanticAnalyzer(module).analyze();
-		//module.init();
-		//module.dump(" | ");
+		//Common.dump("", module);
+		new ModuleAnalyzer(module).analyze();
+		
 		LOGGER.info("---");
+		
 	}
 }
