@@ -28,7 +28,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
 
   final public SimpleNode Start() throws ParseException {
  /*@bgen(jjtree) Module */
-  ASTModule jjtn000 = new ASTModule(JJTMODULE);
+  SimpleNode jjtn000 = new SimpleNode(JJTMODULE);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
   jjtreeOpenNodeScope(jjtn000);
@@ -110,14 +110,14 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case ASSIGN:
       jj_consume_token(ASSIGN);
-      ASTDeclare jjtn002 = new ASTDeclare(JJTDECLARE);
+      SimpleNode jjtn002 = new SimpleNode(JJTDECLARE);
       boolean jjtc002 = true;
       jjtree.openNodeScope(jjtn002);
       jjtreeOpenNodeScope(jjtn002);
       try {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
         case 31:
-        ASTArray jjtn001 = new ASTArray(JJTARRAY);
+        SimpleNode jjtn001 = new SimpleNode(JJTARRAY);
         boolean jjtc001 = true;
         jjtree.openNodeScope(jjtn001);
         jjtreeOpenNodeScope(jjtn001);
@@ -183,7 +183,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
 
   final public void Integer() throws ParseException {
  /*@bgen(jjtree) Integer */
-  ASTInteger jjtn000 = new ASTInteger(JJTINTEGER);
+  SimpleNode jjtn000 = new SimpleNode(JJTINTEGER);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
   jjtreeOpenNodeScope(jjtn000);Token signToken;
@@ -225,7 +225,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
       ScalarAccess();
       break;
     case INTEGER:
-    ASTInteger jjtn001 = new ASTInteger(JJTINTEGER);
+    SimpleNode jjtn001 = new SimpleNode(JJTINTEGER);
     boolean jjtc001 = true;
     jjtree.openNodeScope(jjtn001);
     jjtreeOpenNodeScope(jjtn001);
@@ -247,7 +247,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
 
   final public void Function() throws ParseException {
  /*@bgen(jjtree) Function */
-  ASTFunction jjtn000 = new ASTFunction(JJTFUNCTION);
+  SimpleNode jjtn000 = new SimpleNode(JJTFUNCTION);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
   jjtreeOpenNodeScope(jjtn000);SimpleNode aVar;
@@ -257,7 +257,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
       try {
         jj_consume_token(FUNCTION);
         functionId = jj_consume_token(ID);
-      ASTReturn jjtn003 = new ASTReturn(JJTRETURN);
+      SimpleNode jjtn003 = new SimpleNode(JJTRETURN);
       boolean jjtc003 = true;
       jjtree.openNodeScope(jjtn003);
       jjtreeOpenNodeScope(jjtn003);
@@ -269,7 +269,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
             case 31:
               jj_consume_token(31);
               jj_consume_token(32);
-        ASTArrayVariable jjtn001 = new ASTArrayVariable(JJTARRAYVARIABLE);
+        SimpleNode jjtn001 = new SimpleNode(JJTARRAYVARIABLE);
         boolean jjtc001 = true;
         jjtree.openNodeScope(jjtn001);
         jjtreeOpenNodeScope(jjtn001);
@@ -293,7 +293,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
               jj_la1[6] = jj_gen;
               ;
             }
-      ASTScalarVariable jjtn002 = new ASTScalarVariable(JJTSCALARVARIABLE);
+      SimpleNode jjtn002 = new SimpleNode(JJTSCALARVARIABLE);
       boolean jjtc002 = true;
       jjtree.openNodeScope(jjtn002);
       jjtreeOpenNodeScope(jjtn002);
@@ -359,7 +359,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
 
   final public void Parameters() throws ParseException {
  /*@bgen(jjtree) Parameters */
-  ASTParameters jjtn000 = new ASTParameters(JJTPARAMETERS);
+  SimpleNode jjtn000 = new SimpleNode(JJTPARAMETERS);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
   jjtreeOpenNodeScope(jjtn000);
@@ -417,7 +417,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
     case 31:
       jj_consume_token(31);
       jj_consume_token(32);
-    ASTArrayVariable jjtn001 = new ASTArrayVariable(JJTARRAYVARIABLE);
+    SimpleNode jjtn001 = new SimpleNode(JJTARRAYVARIABLE);
     boolean jjtc001 = true;
     jjtree.openNodeScope(jjtn001);
     jjtreeOpenNodeScope(jjtn001);
@@ -438,7 +438,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
       jj_la1[10] = jj_gen;
       ;
     }
-    ASTScalarVariable jjtn002 = new ASTScalarVariable(JJTSCALARVARIABLE);
+    SimpleNode jjtn002 = new SimpleNode(JJTSCALARVARIABLE);
     boolean jjtc002 = true;
     jjtree.openNodeScope(jjtn002);
     jjtreeOpenNodeScope(jjtn002);
@@ -457,7 +457,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
 
   final public void Stmtlst() throws ParseException {
  /*@bgen(jjtree) Statements */
-  ASTStatements jjtn000 = new ASTStatements(JJTSTATEMENTS);
+  SimpleNode jjtn000 = new SimpleNode(JJTSTATEMENTS);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
   jjtreeOpenNodeScope(jjtn000);
@@ -536,7 +536,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case 31:
         Index();
-        ASTArrayAccess jjtn001 = new ASTArrayAccess(JJTARRAYACCESS);
+        SimpleNode jjtn001 = new SimpleNode(JJTARRAYACCESS);
         boolean jjtc001 = true;
         jjtree.openNodeScope(jjtn001);
         jjtreeOpenNodeScope(jjtn001);
@@ -557,7 +557,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
         jj_la1[13] = jj_gen;
         ;
       }
-    ASTVariable jjtn002 = new ASTVariable(JJTVARIABLE);
+    SimpleNode jjtn002 = new SimpleNode(JJTVARIABLE);
     boolean jjtc002 = true;
     jjtree.openNodeScope(jjtn002);
     jjtreeOpenNodeScope(jjtn002);
@@ -573,7 +573,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
     }
       }
       jj_consume_token(ASSIGN);
-             ASTAssign jjtn003 = new ASTAssign(JJTASSIGN);
+             SimpleNode jjtn003 = new SimpleNode(JJTASSIGN);
              boolean jjtc003 = true;
              jjtree.openNodeScope(jjtn003);
              jjtreeOpenNodeScope(jjtn003);
@@ -605,7 +605,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case 33:
         jj_consume_token(33);
-    ASTVariable jjtn004 = new ASTVariable(JJTVARIABLE);
+    SimpleNode jjtn004 = new SimpleNode(JJTVARIABLE);
     boolean jjtc004 = true;
     jjtree.openNodeScope(jjtn004);
     jjtreeOpenNodeScope(jjtn004);
@@ -621,7 +621,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
     }
         }
         module = jj_consume_token(ID);
-    ASTModuleAccess jjtn005 = new ASTModuleAccess(JJTMODULEACCESS);
+    SimpleNode jjtn005 = new SimpleNode(JJTMODULEACCESS);
     boolean jjtc005 = true;
     jjtree.openNodeScope(jjtn005);
     jjtreeOpenNodeScope(jjtn005);
@@ -643,7 +643,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
         jj_la1[14] = jj_gen;
         ;
       }
-  ASTVariable jjtn006 = new ASTVariable(JJTVARIABLE);
+  SimpleNode jjtn006 = new SimpleNode(JJTVARIABLE);
   boolean jjtc006 = true;
   jjtree.openNodeScope(jjtn006);
   jjtreeOpenNodeScope(jjtn006);
@@ -658,7 +658,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
     jjtreeCloseNodeScope(jjtn006);
   }
       }
-  ASTCall jjtn007 = new ASTCall(JJTCALL);
+  SimpleNode jjtn007 = new SimpleNode(JJTCALL);
   boolean jjtc007 = true;
   jjtree.openNodeScope(jjtn007);
   jjtreeOpenNodeScope(jjtn007);
@@ -726,7 +726,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
           throw new ParseException();
         }
         Term();
-        ASTOperator jjtn001 = new ASTOperator(JJTOPERATOR);
+        SimpleNode jjtn001 = new SimpleNode(JJTOPERATOR);
         boolean jjtc001 = true;
         jjtree.openNodeScope(jjtn001);
         jjtreeOpenNodeScope(jjtn001);
@@ -748,7 +748,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
       }
       break;
     case 31:
-    ASTArray jjtn002 = new ASTArray(JJTARRAY);
+    SimpleNode jjtn002 = new SimpleNode(JJTARRAY);
     boolean jjtc002 = true;
     jjtree.openNodeScope(jjtn002);
     jjtreeOpenNodeScope(jjtn002);
@@ -792,14 +792,14 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
       jj_la1[19] = jj_gen;
       ;
     }
-    ASTNegation jjtn002 = new ASTNegation(JJTNEGATION);
+    SimpleNode jjtn002 = new SimpleNode(JJTNEGATION);
     boolean jjtc002 = true;
     jjtree.openNodeScope(jjtn002);
     jjtreeOpenNodeScope(jjtn002);
     try {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case INTEGER:
-        ASTInteger jjtn001 = new ASTInteger(JJTINTEGER);
+        SimpleNode jjtn001 = new SimpleNode(JJTINTEGER);
         boolean jjtc001 = true;
         jjtree.openNodeScope(jjtn001);
         jjtreeOpenNodeScope(jjtn001);
@@ -850,7 +850,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
   SimpleNode thisNode;
   Token module;
   Token idToken;
-      ASTVariable jjtn001 = new ASTVariable(JJTVARIABLE);
+      SimpleNode jjtn001 = new SimpleNode(JJTVARIABLE);
       boolean jjtc001 = true;
       jjtree.openNodeScope(jjtn001);
       jjtreeOpenNodeScope(jjtn001);
@@ -873,7 +873,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
     case 33:
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case LPAR:
-      ASTCall jjtn002 = new ASTCall(JJTCALL);
+      SimpleNode jjtn002 = new SimpleNode(JJTCALL);
       boolean jjtc002 = true;
       jjtree.openNodeScope(jjtn002);
       jjtreeOpenNodeScope(jjtn002);
@@ -904,7 +904,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
         jj_consume_token(33);
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
         case ID:
-        ASTModule jjtn003 = new ASTModule(JJTMODULE);
+        SimpleNode jjtn003 = new SimpleNode(JJTMODULE);
         boolean jjtc003 = true;
         jjtree.openNodeScope(jjtn003);
         jjtreeOpenNodeScope(jjtn003);
@@ -921,7 +921,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
           jjtreeCloseNodeScope(jjtn003);
         }
           }
-    ASTCall jjtn004 = new ASTCall(JJTCALL);
+    SimpleNode jjtn004 = new SimpleNode(JJTCALL);
     boolean jjtc004 = true;
     jjtree.openNodeScope(jjtn004);
     jjtreeOpenNodeScope(jjtn004);
@@ -949,7 +949,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
           }
           break;
         case SIZE:
-    ASTSizeof jjtn005 = new ASTSizeof(JJTSIZEOF);
+    SimpleNode jjtn005 = new SimpleNode(JJTSIZEOF);
     boolean jjtc005 = true;
     jjtree.openNodeScope(jjtn005);
     jjtreeOpenNodeScope(jjtn005);
@@ -970,7 +970,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
         break;
       case 31:
         Index();
-    ASTArrayAccess jjtn006 = new ASTArrayAccess(JJTARRAYACCESS);
+    SimpleNode jjtn006 = new SimpleNode(JJTARRAYACCESS);
     boolean jjtc006 = true;
     jjtree.openNodeScope(jjtn006);
     jjtreeOpenNodeScope(jjtn006);
@@ -1001,7 +1001,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
 
   final public void Exprtest() throws ParseException {
  /*@bgen(jjtree) #Condition( 2) */
-  ASTCondition jjtn000 = new ASTCondition(JJTCONDITION);
+  SimpleNode jjtn000 = new SimpleNode(JJTCONDITION);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
   jjtreeOpenNodeScope(jjtn000);
@@ -1035,7 +1035,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
 
   final public void While() throws ParseException {
  /*@bgen(jjtree) While */
-  ASTWhile jjtn000 = new ASTWhile(JJTWHILE);
+  SimpleNode jjtn000 = new SimpleNode(JJTWHILE);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
   jjtreeOpenNodeScope(jjtn000);
@@ -1079,7 +1079,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
 
   final public void If() throws ParseException {
  /*@bgen(jjtree) If */
-  ASTIf jjtn000 = new ASTIf(JJTIF);
+  SimpleNode jjtn000 = new SimpleNode(JJTIF);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
   jjtreeOpenNodeScope(jjtn000);
@@ -1158,7 +1158,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
 
   final public void ArgumentList() throws ParseException {
  /*@bgen(jjtree) ArgumentList */
-  ASTArgumentList jjtn000 = new ASTArgumentList(JJTARGUMENTLIST);
+  SimpleNode jjtn000 = new SimpleNode(JJTARGUMENTLIST);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
   jjtreeOpenNodeScope(jjtn000);
@@ -1218,7 +1218,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
   final public void Argument() throws ParseException {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case ID:
-      ASTVariable jjtn001 = new ASTVariable(JJTVARIABLE);
+      SimpleNode jjtn001 = new SimpleNode(JJTVARIABLE);
       boolean jjtc001 = true;
       jjtree.openNodeScope(jjtn001);
       jjtreeOpenNodeScope(jjtn001);
@@ -1232,7 +1232,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
       }
       break;
     case STRING:
-      ASTString jjtn002 = new ASTString(JJTSTRING);
+      SimpleNode jjtn002 = new SimpleNode(JJTSTRING);
       boolean jjtc002 = true;
       jjtree.openNodeScope(jjtn002);
       jjtreeOpenNodeScope(jjtn002);
@@ -1246,7 +1246,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
       }
       break;
     case INTEGER:
-      ASTInteger jjtn003 = new ASTInteger(JJTINTEGER);
+      SimpleNode jjtn003 = new SimpleNode(JJTINTEGER);
       boolean jjtc003 = true;
       jjtree.openNodeScope(jjtn003);
       jjtreeOpenNodeScope(jjtn003);
@@ -1270,7 +1270,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
   Token idToken;
   boolean isAnId = true;
     idToken = jj_consume_token(ID);
-    ASTVariable jjtn004 = new ASTVariable(JJTVARIABLE);
+    SimpleNode jjtn004 = new SimpleNode(JJTVARIABLE);
     boolean jjtc004 = true;
     jjtree.openNodeScope(jjtn004);
     jjtreeOpenNodeScope(jjtn004);
@@ -1282,7 +1282,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
         case 33:
       isAnId = false;
           jj_consume_token(33);
-      ASTVariable jjtn001 = new ASTVariable(JJTVARIABLE);
+      SimpleNode jjtn001 = new SimpleNode(JJTVARIABLE);
       boolean jjtc001 = true;
       jjtree.openNodeScope(jjtn001);
       jjtreeOpenNodeScope(jjtn001);
@@ -1297,7 +1297,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
         jjtreeCloseNodeScope(jjtn001);
       }
           }
-                ASTSizeof jjtn002 = new ASTSizeof(JJTSIZEOF);
+                SimpleNode jjtn002 = new SimpleNode(JJTSIZEOF);
                 boolean jjtc002 = true;
                 jjtree.openNodeScope(jjtn002);
                 jjtreeOpenNodeScope(jjtn002);
@@ -1312,7 +1312,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
           break;
         case 31:
           Index();
-    ASTArrayAccess jjtn003 = new ASTArrayAccess(JJTARRAYACCESS);
+    SimpleNode jjtn003 = new SimpleNode(JJTARRAYACCESS);
     boolean jjtc003 = true;
     jjtree.openNodeScope(jjtn003);
     jjtreeOpenNodeScope(jjtn003);
@@ -1367,7 +1367,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
   final public void ScalarAccess() throws ParseException {
   Token idToken;
     idToken = jj_consume_token(ID);
-    ASTVariable jjtn001 = new ASTVariable(JJTVARIABLE);
+    SimpleNode jjtn001 = new SimpleNode(JJTVARIABLE);
     boolean jjtc001 = true;
     jjtree.openNodeScope(jjtn001);
     jjtreeOpenNodeScope(jjtn001);
@@ -1385,7 +1385,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case 33:
       jj_consume_token(33);
-        ASTSizeof jjtn002 = new ASTSizeof(JJTSIZEOF);
+        SimpleNode jjtn002 = new SimpleNode(JJTSIZEOF);
         boolean jjtc002 = true;
         jjtree.openNodeScope(jjtn002);
         jjtreeOpenNodeScope(jjtn002);
@@ -1406,7 +1406,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
 
   final public void Index() throws ParseException {
  /*@bgen(jjtree) Index */
-  ASTIndex jjtn000 = new ASTIndex(JJTINDEX);
+  SimpleNode jjtn000 = new SimpleNode(JJTINDEX);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
   jjtreeOpenNodeScope(jjtn000);

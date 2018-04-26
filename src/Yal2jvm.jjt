@@ -4,7 +4,7 @@ options
   STATIC = false;
   NODE_SCOPE_HOOK = true;
   //TRACK_TOKENS = true;
-  MULTI = true;
+  MULTI = false;
   JJTREE_OUTPUT_DIRECTORY = "yal2jvm";
 }
 

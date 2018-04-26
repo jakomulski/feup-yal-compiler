@@ -18,7 +18,7 @@ public enum VariableDescFactory {
 	}
 
 	class VariableDescImpl implements VariableDesc{
-
+		private String name = "";
 		private boolean initialized;
 		private VariableType type;
 		private boolean isField = false;
@@ -26,7 +26,12 @@ public enum VariableDescFactory {
 		private int value = 0;
 		
 		
+		public void setName(String name) {
+			this.name = name;
+		}
+
 		public VariableDescImpl(VariableDesc variableDesc){
+			name = variableDesc.getName();
 			type = variableDesc.getType();
 			initialized = variableDesc.isInitialized();
 			value = variableDesc.getValue();
@@ -77,6 +82,12 @@ public enum VariableDescFactory {
 		@Override
 		public String toString() {
 			return "VariableDesc [ initialized=" + initialized + ", type=" + type + "]";
+		}
+
+		@Override
+		public String getName() {
+			// TODO Auto-generated method stub
+			return null;
 		}
 	}
 }

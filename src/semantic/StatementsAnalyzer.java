@@ -2,20 +2,10 @@ package semantic;
 
 import static semantic.Common.cast;
 import static semantic.Common.checkSizeOf;
-import static yal2jvm.Yal2jvmTreeConstants.JJTARRAY;
-import static yal2jvm.Yal2jvmTreeConstants.JJTARRAYACCESS;
-import static yal2jvm.Yal2jvmTreeConstants.JJTASSIGN;
-import static yal2jvm.Yal2jvmTreeConstants.JJTCALL;
-import static yal2jvm.Yal2jvmTreeConstants.JJTIF;
-import static yal2jvm.Yal2jvmTreeConstants.JJTINTEGER;
-import static yal2jvm.Yal2jvmTreeConstants.JJTMODULEACCESS;
-import static yal2jvm.Yal2jvmTreeConstants.JJTNEGATION;
-import static yal2jvm.Yal2jvmTreeConstants.JJTOPERATOR;
-import static yal2jvm.Yal2jvmTreeConstants.JJTSIZEOF;
-import static yal2jvm.Yal2jvmTreeConstants.JJTVARIABLE;
-import static yal2jvm.Yal2jvmTreeConstants.JJTWHILE;
+import static yal2jvm.Yal2jvmTreeConstants.*;
 
 import custom.Logger;
+import ir.IrBuilder;
 import scope.BlockedSimpleScope;
 import scope.FunctionDesc;
 import scope.Scope;
@@ -28,60 +18,67 @@ import yal2jvm.SimpleNode;
 
 public class StatementsAnalyzer {
 	private final Logger LOGGER = Logger.INSTANCE;
+	private final IrBuilder irBuilder;
 	
+	public StatementsAnalyzer(IrBuilder irBuilder){
+		this.irBuilder = irBuilder;
+	}
 	
 	public void analyzeStatements(SimpleNode node, Scope scope) {
 		if (node.jjtGetNumChildren() == 0)
 			return;
 		for (Node n : node.getChildren()) {
 			SimpleNode statement = (SimpleNode) n;
-
+						
 			if (statement.is(JJTCALL)) {
-				checkCall(statement, scope);
+				analyzeCall(statement, scope);
+				irBuilder.addStatement(statement, scope);
 			} else if (statement.is(JJTASSIGN)) {
-				checkAssign(statement, scope);
+				analyzeAssign(statement, scope);
+				irBuilder.addStatement(statement, scope);
 			} else if (statement.is(JJTWHILE)) {
 				LOGGER.semanticInfo(node, "loop");
-				
+
 				SimpleNode condition = cast(statement.jjtGetChild(0));
 				SimpleNode lhs = cast(condition.jjtGetChild(0));
 				SimpleNode rhs = cast(condition.jjtGetChild(1));
-				
-				checkRhs(lhs, scope, VariableDescFactory.INSTANCE.createField(VariableType.SCALAR, false));	
+
+				checkRhs(lhs, scope, VariableDescFactory.INSTANCE.createField(VariableType.SCALAR, false));
 				checkRhs(rhs, scope, VariableDescFactory.INSTANCE.createField(VariableType.SCALAR, false));
-				
+
 				SimpleNode statements = cast(statement.jjtGetChild(1));
 				analyzeStatements(statements, ScopeFactory.INSTANCE.createBlockedScope(scope));
 			} else if (statement.is(JJTIF)) {
 				LOGGER.semanticInfo(node, "if");
-				
+
 				SimpleNode condition = cast(statement.jjtGetChild(0));
 				SimpleNode lhs = cast(condition.jjtGetChild(0));
 				SimpleNode rhs = cast(condition.jjtGetChild(1));
-				
+
 				checkRhs(lhs, scope, VariableDescFactory.INSTANCE.createField(VariableType.SCALAR, false));
 				checkRhs(rhs, scope, VariableDescFactory.INSTANCE.createField(VariableType.SCALAR, false));
-				
+
 				BlockedSimpleScope ifScope = ScopeFactory.INSTANCE.createBlockedScope(scope);
 				BlockedSimpleScope elseScope = ScopeFactory.INSTANCE.createBlockedScope(scope);
-				
+
 				SimpleNode ifStatements = cast(statement.jjtGetChild(1));
 				analyzeStatements(ifStatements, ifScope);
-				if(statement.jjtGetNumChildren() == 3){
+				if (statement.jjtGetNumChildren() == 3) {
 					SimpleNode elseStatements = cast(statement.jjtGetChild(2));
 					analyzeStatements(elseStatements, elseScope);
 				}
-				
+
 				scope.mergeInitialized(ifScope, elseScope);
 			}
 		}
 
 	}
 
-	private void checkCall(SimpleNode node, Scope scope) {
+	private void analyzeCall(SimpleNode node, Scope scope) {
 		SimpleNode nameNode = cast(node.jjtGetChild(0));
 		if (nameNode.is(JJTMODULEACCESS)) {
-			LOGGER.semanticInfo(node, "call " + nameNode.getTokenValue() + "." + cast(nameNode.jjtGetChild(0)).getTokenValue());
+			LOGGER.semanticInfo(node,
+					"call " + nameNode.getTokenValue() + "." + cast(nameNode.jjtGetChild(0)).getTokenValue());
 			return; // CANNOT BE CHECKED
 		}
 
@@ -110,13 +107,17 @@ public class StatementsAnalyzer {
 		if (var.is(JJTINTEGER)) {
 			if (!paramDesc.equals(VariableType.SCALAR))
 				LOGGER.semanticError(var, "incorrect type");
-		} else if (!Common.checkUndeclaredAndUninitialized(scope,var)) {
+		} else if (var.is(JJTSTRING)) {
+			LOGGER.semanticError(var, "string is unsupported");
+		} else if (!Common.checkUndeclaredAndUninitialized(scope, var))
+
+		{
 		} else if (!scope.getVariable(name).getType().equals(paramDesc)) {
 			LOGGER.semanticError(var, "incorrect type");
 		}
 	}
 
-	private void checkAssign(SimpleNode node, Scope scope) {
+	private void analyzeAssign(SimpleNode node, Scope scope) {
 		SimpleNode access = (SimpleNode) node.jjtGetChild(0);
 		VariableDesc desc = null;
 		String name = access.getTokenValue();
@@ -126,7 +127,7 @@ public class StatementsAnalyzer {
 				scope.addVariable(name, VariableDescFactory.INSTANCE.createField(VariableType.ANY, false));
 			desc = scope.getVariable(name);
 			LOGGER.semanticInfo(access, "set " + name);
-			
+
 		} else if (access.is(JJTARRAYACCESS)) {
 			// TODO: check the type
 			checkArrayAccess(access, scope);
@@ -138,12 +139,12 @@ public class StatementsAnalyzer {
 
 	private void checkArrayAccess(SimpleNode node, Scope scope) {
 		String name = node.getTokenValue();
-		if (!Common.checkUndeclaredAndUninitialized(scope, node)){}
-		else {
+		if (!Common.checkUndeclaredAndUninitialized(scope, node)) {
+		} else {
 			String indexValue = cast(node.jjtGetChild(0)).getTokenValue();
-			if (!Common.isInt(indexValue) ) {
-				if (!Common.checkUndeclaredAndUninitialized(scope, cast(node.jjtGetChild(0)))){}
-				else if (scope.getVariable(indexValue).is(scope.getVariable(name).getType()))
+			if (!Common.isInt(indexValue)) {
+				if (!Common.checkUndeclaredAndUninitialized(scope, cast(node.jjtGetChild(0)))) {
+				} else if (scope.getVariable(indexValue).is(scope.getVariable(name).getType()))
 					LOGGER.semanticError(node, "wrong type");
 				else
 					LOGGER.semanticInfo(node, "set " + name + "[" + indexValue + "]");
@@ -156,22 +157,20 @@ public class StatementsAnalyzer {
 		if (desc.is(VariableType.ANY) || desc.is(VariableType.ARRAY)) {
 			desc.setType(VariableType.ARRAY);
 			SimpleNode nameNode = cast(assignment.jjtGetChild(0));
-			
+
 			if (nameNode.is(JJTINTEGER)) {
 				desc.initialize();
 				int size = Integer.parseInt(cast(assignment.jjtGetChild(0)).getTokenValue());
 				desc.setType(VariableType.ARRAY);
-				
-				
+
 				LOGGER.semanticInfo(assignment, "load " + size);
-			}
-			else if(nameNode.is(JJTSIZEOF)){
-				if(Common.checkSizeOf(nameNode, scope))
-					desc.initialize();	
+			} else if (nameNode.is(JJTSIZEOF)) {
+				if (Common.checkSizeOf(nameNode, scope))
+					desc.initialize();
 			} else {
 				String varName = nameNode.getTokenValue();
 				if (!scope.hasVariable(varName)) {
-					LOGGER.semanticError(assignment, "undeclared"+varName);
+					LOGGER.semanticError(assignment, "undeclared" + varName);
 					return;
 				} else if (!scope.getVariable(varName).is(VariableType.SCALAR)) {
 					LOGGER.semanticError(assignment, "incorrect type");
@@ -231,7 +230,7 @@ public class StatementsAnalyzer {
 			LOGGER.semanticInfo(assignment, "negation");
 			checkRhs(cast(assignment.jjtGetChild(0)), scope, desc);
 		} else if (assignment.is(JJTCALL)) {
-			checkCall(assignment, scope);
+			analyzeCall(assignment, scope);
 		} else if (assignment.is(JJTSIZEOF)) {
 			checkSizeOf(assignment, scope);
 		} else if (assignment.is(JJTARRAYACCESS)) {
@@ -240,8 +239,6 @@ public class StatementsAnalyzer {
 			LOGGER.semanticInfo(assignment,
 					"load " + assignment.getTokenValue() + "." + cast(assignment.jjtGetChild(0)).getTokenValue());
 		}
-
-		desc.initialize(); // after correct assignment
+		desc.initialize();
 	}
-
 }

@@ -51,6 +51,7 @@ public abstract class Scope {
 	
 	
 	public void addVariable(String name, VariableDesc desc){
+		desc.setName(name);
 		this.variables.put(name, desc);
 	}
 	

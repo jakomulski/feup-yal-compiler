@@ -7,9 +7,14 @@ public class FunctionDesc {
 	
 	private VariableType returnType;
 	private List<VariableType> arumentsTypes = new ArrayList<>();
+	private final String name;
 	
-	public FunctionDesc(){}
+	public FunctionDesc(String name){
+		this.name = name;
+	}
 
+	
+	
 	public VariableType getReturnType() {
 		return returnType;
 	}
@@ -33,6 +38,12 @@ public class FunctionDesc {
 	@Override
 	public String toString() {
 		return "FunctionDesc [returnType=" + returnType + ", arumentsTypes=" + arumentsTypes + "]";
+	}
+
+
+
+	public String getName() {
+		return name;
 	}
 	
 	

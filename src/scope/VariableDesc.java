@@ -9,4 +9,6 @@ public interface VariableDesc {
 	boolean is(VariableType type);
 	VariableType getType();
 	VariableDesc setType(VariableType type);
+	String getName();
+	void setName(String name);
 }

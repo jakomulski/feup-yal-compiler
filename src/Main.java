@@ -22,7 +22,7 @@ public class Main {
 		SimpleNode module = new Yal2jvm(new java.io.FileInputStream(input)).Start();
 		
 		
-		//Common.dump("", module);
+		Common.dump("", module);
 		new ModuleAnalyzer(module).analyze();
 		
 		LOGGER.info("---");

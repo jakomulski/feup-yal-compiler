@@ -13,6 +13,8 @@ import java.util.Optional;
 import java.util.Queue;
 
 import custom.Logger;
+import ir.CodeBuilder;
+import ir.IrBuilder;
 import scope.FunctionDesc;
 import scope.ModuleScope;
 import scope.Scope;
@@ -20,19 +22,22 @@ import scope.ScopeFactory;
 import scope.VariableDesc;
 import scope.VariableDescFactory;
 import scope.VariableType;
-import yal2jvm.ASTFunction;
-import yal2jvm.ASTStatements;
+
 import yal2jvm.Node;
 import yal2jvm.SimpleNode;
 
 public class ModuleAnalyzer {
 	private final Logger LOGGER = Logger.INSTANCE;
-	SimpleNode module;
-	ModuleScope rootScope;
-
+	private final SimpleNode module;
+	private final ModuleScope rootScope;
+	private final CodeBuilder codeBuilder;
+	
+	
+	
 	public ModuleAnalyzer(SimpleNode module) {
 		this.module = module;
-		rootScope = ScopeFactory.INSTANCE.getModuleScope();
+		this.rootScope = ScopeFactory.INSTANCE.getModuleScope();
+		this.codeBuilder = new CodeBuilder(module, rootScope);
 	}
 
 	Queue<Runnable> toAnalyze = new LinkedList<>();
@@ -40,14 +45,15 @@ public class ModuleAnalyzer {
 	public void analyze() {
 		analyzeModule("", module);
 		toAnalyze.forEach(r -> r.run());
+		this.codeBuilder.build();
 	}
 
 	public void analyzeModule(String prefix, SimpleNode node) {
 		LOGGER.semanticInfo(node, "class " + node.getTokenValue());
 		for (Node n : node.getChildren())
 			if (SimpleNode.class.cast(n).is(JJTFUNCTION))
-				analyzeFunction((ASTFunction) n);
-			else
+				analyzeFunction(Common.cast(n));
+			else //
 				analyzeDeclaration(SimpleNode.class.cast(n));
 	}
 
@@ -127,31 +133,33 @@ public class ModuleAnalyzer {
 		rootScope.addVariable(name, desc);
 	}
 
-	private void analyzeFunction(ASTFunction node) {
+	private void analyzeFunction(SimpleNode node) {
 
 		Scope functionScope = ScopeFactory.INSTANCE.createSimpleScope(rootScope);
-		FunctionDesc fnDesc = new FunctionDesc();
+		String name = node.getTokenValue();
+		
+		FunctionDesc fnDesc = new FunctionDesc(name);
 
 		Optional<VariableDesc> returnVar = analyzeFunctionReturn((SimpleNode) node.jjtGetChild(0), fnDesc,
 				functionScope);
 		analyzeFunctionParameters((SimpleNode) node.jjtGetChild(1), fnDesc, functionScope);
 
-		rootScope.addFunction(node.getTokenValue(), fnDesc);
-		ASTStatements statementsNode = (ASTStatements) node.jjtGetChild(2);
+		rootScope.addFunction(name, fnDesc);
+		SimpleNode statementsNode = (SimpleNode) node.jjtGetChild(2);
 		toAnalyze.add(() -> {
 			LOGGER.semanticInfo(node, "function: " + node.getTokenValue());
 
-			new StatementsAnalyzer().analyzeStatements(statementsNode, functionScope);
-
+			IrBuilder irBuilder = new IrBuilder(fnDesc);
+			codeBuilder.addIrBuilder(irBuilder);
+			
+			new StatementsAnalyzer(irBuilder).analyzeStatements(statementsNode, functionScope);
 			returnVar.ifPresent(desc -> {
 				if (!desc.isInitialized())
 					LOGGER.semanticError(statementsNode, "return value is not initialized");
 			});
-
+			
 			// TODO -> WARNING parameters
-
 		});
-
 	}
 
 	private Optional<VariableDesc> analyzeFunctionReturn(SimpleNode returnNode, FunctionDesc fnDesc,
