@@ -84,6 +84,8 @@ public enum VariableDescFactory {
 			return "VariableDesc [ initialized=" + initialized + ", type=" + type + "]";
 		}
 
+		
+		
 		@Override
 		public String getName() {
 			// TODO Auto-generated method stub

@@ -46,5 +46,26 @@ public class FunctionDesc {
 		return name;
 	}
 	
+	public String asJasminVoid(){
+		StringBuilder builder = new StringBuilder(name+"(");
+		this.arumentsTypes.forEach(t->builder.append(typeAsJasmin(t)));
+		builder.append(")V");
+		
+		return builder.toString();
+	}
 	
+	public String asJasmin(){
+		StringBuilder builder = new StringBuilder(name+"(");
+		this.arumentsTypes.forEach(t->builder.append(typeAsJasmin(t)));
+		builder.append(")");
+		
+		if(!returnType.equals(VariableType.NULL))
+			builder.append(typeAsJasmin(returnType));
+		
+		return builder.toString();
+	}
+	
+	public String typeAsJasmin(VariableType type){
+		return type.equals(VariableType.SCALAR)?"I":"[I";
+	}
 }

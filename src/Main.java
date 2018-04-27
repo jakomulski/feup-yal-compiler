@@ -1,7 +1,7 @@
 import java.io.FileNotFoundException;
 
 import custom.Logger;
-
+import ir.GenerateCodeModule;
 import scope.ModuleScope;
 import semantic.Common;
 import semantic.ModuleAnalyzer;
@@ -24,6 +24,8 @@ public class Main {
 		
 		Common.dump("", module);
 		new ModuleAnalyzer(module).analyze();
+		
+		//new GenerateCodeModule().generateModule("", module);
 		
 		LOGGER.info("---");
 		

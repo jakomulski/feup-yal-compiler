@@ -11,6 +11,7 @@ public class CodeBuilder {
 	private final SimpleNode moduleNode;
 	private final Scope rootScope;
 	
+	
 	private final List<IrBuilder> functions = new ArrayList<>(); 
 	
 	public CodeBuilder(SimpleNode node, Scope scope){
