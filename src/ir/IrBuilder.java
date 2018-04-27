@@ -35,7 +35,7 @@ public class IrBuilder {
 	}
 
 	public void build() {
-		 //.method public static 
+		System.out.println(".method public static "+functionDesc.asJasmin()); //
 		statements.forEach(statement -> {
 			generateStatement(statement.getNode(), statement.scope);
 		});
@@ -47,7 +47,6 @@ public class IrBuilder {
 		if (node.is(JJTCALL)) {
 			generateCall(node, scope);
 		} else if (node.is(JJTASSIGN)) {
-			
 			String varName = ((SimpleNode)node.jjtGetChild(0)).getTokenValue();
 			VariableDesc varDesc = scope.getVariable(varName);
 			

@@ -1,4 +1,6 @@
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.List;
 
 import custom.Logger;
 import ir.GenerateCodeModule;
@@ -22,7 +24,7 @@ public class Main {
 		SimpleNode module = new Yal2jvm(new java.io.FileInputStream(input)).Start();
 		
 		
-		Common.dump("", module);
+		//Common.dump("", module);
 		new ModuleAnalyzer(module).analyze();
 		
 		//new GenerateCodeModule().generateModule("", module);
@@ -30,4 +32,8 @@ public class Main {
 		LOGGER.info("---");
 		
 	}
+	
+	
+	
+	
 }

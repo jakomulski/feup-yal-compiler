@@ -25,7 +25,10 @@ public class CodeBuilder {
 	
 	public void build() {
 		String className = moduleNode.getTokenValue();
-		System.out.println(className);
+		System.out.println(".class public "+ className + ".super java/lang/Object");
+		
 		functions.forEach(f->f.build());
+		
+		
 	};
 }

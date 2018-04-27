@@ -153,6 +153,7 @@ public class ModuleAnalyzer {
 			codeBuilder.addIrBuilder(irBuilder);
 			
 			new StatementsAnalyzer(irBuilder).analyzeStatements(statementsNode, functionScope);
+
 			returnVar.ifPresent(desc -> {
 				if (!desc.isInitialized())
 					LOGGER.semanticError(statementsNode, "return value is not initialized");
