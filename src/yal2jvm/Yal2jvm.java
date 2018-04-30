@@ -904,7 +904,7 @@ public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmCon
         jj_consume_token(33);
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
         case ID:
-        SimpleNode jjtn003 = new SimpleNode(JJTMODULE);
+        SimpleNode jjtn003 = new SimpleNode(JJTMODULEACCESS);
         boolean jjtc003 = true;
         jjtree.openNodeScope(jjtn003);
         jjtreeOpenNodeScope(jjtn003);

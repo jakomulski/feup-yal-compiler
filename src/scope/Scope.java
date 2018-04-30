@@ -6,8 +6,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 
-
-
 public abstract class Scope {
 	Scope parent;
 	protected Map<String, VariableDesc> variables = new HashMap<>();
@@ -15,9 +13,9 @@ public abstract class Scope {
 		this.parent = parent;
 	}
 	
-	public void mergeInitialized(BlockedSimpleScope scope, BlockedSimpleScope ... args){
-		
+	public void mergeInitialized(BlockedSimpleScope scope, BlockedSimpleScope ... args){	
 		scope.blocked.forEach((k,v)->{
+			
 			boolean isInitialized = true;
 			if(v.isInitialized()){
 				for(BlockedSimpleScope sc : args)
@@ -27,10 +25,10 @@ public abstract class Scope {
 			else{
 				isInitialized = false;
 			}
-			if(isInitialized)
+			if(isInitialized){
 				this.getVariable(k).initialize();
+			}
 		});
-		
 	}
 	
 	public VariableDesc getVariable(String name){
@@ -50,6 +48,7 @@ public abstract class Scope {
 	};
 	
 	
+	
 	public void addVariable(String name, VariableDesc desc){
 		desc.setName(name);
 		this.variables.put(name, desc);
@@ -59,6 +58,7 @@ public abstract class Scope {
 		return parent;
 	}
 	
+	public abstract String getModuleName();
 	public abstract FunctionDesc getFunction(String name);
 	public abstract boolean hasFunction(String name);
 

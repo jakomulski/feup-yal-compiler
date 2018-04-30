@@ -5,9 +5,14 @@ import java.util.Map;
 
 public class ModuleScope extends Scope {
 	private Map<String, FunctionDesc> functions = new HashMap<>();
+	private String moduleName = "";
 
 	public ModuleScope() {
 		super(null);
+	}
+	
+	public void setModuleName(String name){
+		this.moduleName  = name;
 	}
 	
 	public void addFunction(String name, FunctionDesc desc){
@@ -28,6 +33,11 @@ public class ModuleScope extends Scope {
 	@Override
 	public String toString() {
 		return "functions = " + functions + "\n" + super.toString();
+	}
+
+	@Override
+	public String getModuleName() {
+		return this.moduleName;
 	}
 	
 }

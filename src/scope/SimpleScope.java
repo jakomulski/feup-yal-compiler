@@ -17,4 +17,9 @@ public class SimpleScope extends Scope {
 	public boolean hasFunction(String name) {
 		return parent.hasFunction(name);
 	}
+
+	@Override
+	public String getModuleName() {
+		return parent.getModuleName();
+	}
 }

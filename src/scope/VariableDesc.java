@@ -2,8 +2,8 @@ package scope;
 
 public interface VariableDesc {
 	VariableDesc initialize();
-	int getValue();
-	void setValue(int value);
+	String getValue();
+	void setValue(String value);
 	boolean isInitialized();
 	boolean isField();
 	boolean is(VariableType type);
@@ -11,4 +11,5 @@ public interface VariableDesc {
 	VariableDesc setType(VariableType type);
 	String getName();
 	void setName(String name);
+	
 }

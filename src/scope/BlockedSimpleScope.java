@@ -27,5 +27,4 @@ public class BlockedSimpleScope extends SimpleScope {
 		}
 		return null;
 	}
-
 }

@@ -59,9 +59,10 @@ public class FunctionDesc {
 		this.arumentsTypes.forEach(t->builder.append(typeAsJasmin(t)));
 		builder.append(")");
 		
-		if(!returnType.equals(VariableType.NULL))
+		if(returnType.equals(VariableType.NULL))
+			builder.append("V");
+		else
 			builder.append(typeAsJasmin(returnType));
-		
 		return builder.toString();
 	}
 	

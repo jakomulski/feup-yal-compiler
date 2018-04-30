@@ -3,7 +3,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import custom.Logger;
-import ir.GenerateCodeModule;
+import ir.CodeBuilder;
 import scope.ModuleScope;
 import semantic.Common;
 import semantic.ModuleAnalyzer;
@@ -18,22 +18,20 @@ public class Main {
 	ModuleScope scopeTree = new ModuleScope();
 	
 	public static void main(String[] args) throws ParseException, FileNotFoundException {
-		LOGGER.info("Reading from standard input...");
+		//LOGGER.info("Reading from standard input...");
 		//new Yal2jvm();
-		String input = "./examples/programa3.yal";
-		SimpleNode module = new Yal2jvm(new java.io.FileInputStream(input)).Start();
+		//String input = "./examples/programa3.yal";
+		SimpleNode module = new Yal2jvm(new java.io.FileInputStream(args[0])).Start();
 		
 		
 		//Common.dump("", module);
-		new ModuleAnalyzer(module).analyze();
+		if(LOGGER.haveSyntacticErrors())
+			return;
+		CodeBuilder builder = new ModuleAnalyzer(module).analyze();
+		if(LOGGER.haveSematicErrors())
+			return;
 		
-		//new GenerateCodeModule().generateModule("", module);
-		
-		LOGGER.info("---");
-		
+		builder.build();		
+		//new GenerateCodeModule().generateModule("", module);;
 	}
-	
-	
-	
-	
 }

@@ -1,5 +1,8 @@
 package custom;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import yal2jvm.ParseException;
 import yal2jvm.SimpleNode;
 
@@ -15,6 +18,9 @@ public enum Logger {
 		counter = MAX_ERRORS;
 	}
 
+	public List<String> semanticErrors = new ArrayList<>();
+	public List<String> syntacticErrors = new ArrayList<>();
+	
 	public void info(Object info) {
 		System.out.println(info);
 	}
@@ -28,13 +34,23 @@ public enum Logger {
 		if (SHOW_INFO)
 			System.out.println(+node.getLineNumber() + ": INFO " + " " + info);
 	}
-
+	
+	public boolean haveSematicErrors(){
+		return semanticErrors.size() > 0;
+	}
+	
+	public boolean haveSyntacticErrors(){
+		return syntacticErrors.size() > 0;
+	}
+	
 	public void semanticError(SimpleNode node, String info) {
+		semanticErrors.add("ERROR " + node.getLineNumber() + ": " + info);
 		System.out.println("ERROR " + node.getLineNumber() + ": " + info);
 	}
 
 	public void error(ParseException e) throws ParseException {
-		System.out.println(e.getMessage());
+		System.out.println("ERROR "+e.currentToken.beginLine+ ": " + "syntactic");
+		syntacticErrors.add("ERROR "+e.currentToken.beginLine+ ": " + "syntactic");
 		counter--;
 
 		if (counter == 0) {

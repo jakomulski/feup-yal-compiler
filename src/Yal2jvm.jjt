@@ -440,7 +440,7 @@ void CallOrAccess() #void :
         jjtThis.jjtToken = thisNode.jjtToken;
         thisNode.jjtToken = module;
       }
-      ) #Module(1)
+      ) #ModuleAccess(1)
   )
   ArgumentList() #Call(2)
 | < SIZE > #Sizeof(1)

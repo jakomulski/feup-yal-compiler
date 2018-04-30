@@ -32,29 +32,26 @@ public class ModuleAnalyzer {
 	private final ModuleScope rootScope;
 	private final CodeBuilder codeBuilder;
 	
-	
-	
 	public ModuleAnalyzer(SimpleNode module) {
 		this.module = module;
-		this.rootScope = ScopeFactory.INSTANCE.getModuleScope();
+		this.rootScope = ScopeFactory.INSTANCE.getModuleScope(module.getTokenValue());
 		this.codeBuilder = new CodeBuilder(module, rootScope);
 	}
 
 	Queue<Runnable> toAnalyze = new LinkedList<>();
 
-	public void analyze() {
-		analyzeModule("", module);
+	public CodeBuilder analyze() {
+		analyzeModule(module);
 		toAnalyze.forEach(r -> r.run());
-		this.codeBuilder.build();
+		return this.codeBuilder;
 	}
 
-	public void analyzeModule(String prefix, SimpleNode node) {
-		LOGGER.semanticInfo(node, "class " + node.getTokenValue());
+	public void analyzeModule(SimpleNode node) {
 		for (Node n : node.getChildren())
-			if (SimpleNode.class.cast(n).is(JJTFUNCTION))
+			if (Common.cast(n).is(JJTFUNCTION))
 				analyzeFunction(Common.cast(n));
-			else //
-				analyzeDeclaration(SimpleNode.class.cast(n));
+			else
+				analyzeDeclaration(Common.cast(n));
 	}
 
 	private void analyzeDeclaration(SimpleNode node) {
@@ -68,12 +65,12 @@ public class ModuleAnalyzer {
 		if (node.is(JJTARRAYVARIABLE)) {
 			name = node.getTokenValue();
 			desc = VariableDescFactory.INSTANCE.createField(VariableType.ARRAY, false);
-			LOGGER.semanticInfo(node, "" + name + "[]");
+			codeBuilder.addArrayDeclaration(name);
 
 		} else { // JJTSCALARVARIABLE
 			name = node.getTokenValue();
 			desc = VariableDescFactory.INSTANCE.createField(VariableType.SCALAR, false);
-			LOGGER.semanticInfo(node, "" + name);
+			codeBuilder.addScalarDeclaration(name);
 		}
 		rootScope.addVariable(name, desc);
 	}
@@ -82,34 +79,35 @@ public class ModuleAnalyzer {
 		VariableDesc desc;
 		String name;
 
-		name = SimpleNode.class.cast(node.jjtGetChild(0)).getTokenValue();
-		node = (SimpleNode) node.jjtGetChild(1);
+		name = node.jjtGetChild(0).getTokenValue();
+		node =   node.jjtGetChild(1);
 		if (node.is(JJTINTEGER)) {
 			desc = VariableDescFactory.INSTANCE.createField(VariableType.SCALAR, true);
-			String value = node.jjtGetValue() + node.getTokenValue();
-			desc.setValue(Integer.parseInt(value));
-			LOGGER.semanticInfo(node, "" + name + "=" + value);
+			String value = node.getTokenValue();
+			desc.setValue(value);
+			codeBuilder.addScalarInitialization(name, value);
 			rootScope.addVariable(name, desc);
 		} else { // JJTARRAY
-			analyzeArrayInitialization((SimpleNode) node.jjtGetChild(0), name);
+			analyzeArrayInitialization(  node.jjtGetChild(0), name);
 		}
 	}
 
 	private void analyzeArrayInitialization(SimpleNode node, String name) {
 		VariableDesc desc;
 		if (node.is(JJTINTEGER)) {
-			int size = Integer.parseInt(node.getTokenValue());
+			String size = node.getTokenValue();
 
 			desc = VariableDescFactory.INSTANCE.createField(VariableType.ARRAY, true);
-			LOGGER.semanticInfo(node, "" + name + "=" + "[" + size + "]");
+			desc.setValue(size);
+			codeBuilder.addArrayInitialization(name, size);
 		} else if (node.is(JJTSIZEOF)) {
 			if (!checkSizeOf(node, rootScope))
 				return;
 			else {
 				VariableDesc varDesc = rootScope
-						.getVariable(SimpleNode.class.cast(node.jjtGetChild(0)).getTokenValue());
+						.getVariable(node.jjtGetChild(0).getTokenValue());
 				desc = VariableDescFactory.INSTANCE.createField(VariableType.ARRAY, true);
-				LOGGER.semanticInfo(node, name + "=" + "[ ]");
+				codeBuilder.addArrayInitialization(name, varDesc.getValue());
 			}
 		} else {
 			String varName = node.getTokenValue();
@@ -121,13 +119,14 @@ public class ModuleAnalyzer {
 				return;
 			} else {
 				VariableDesc varDesc = rootScope.getVariable(varName);
-				int size = varDesc.getValue();
-				if (size < 1) {
+				String size = varDesc.getValue();
+				if (size.startsWith("-")) {
 					LOGGER.semanticError(node, "size of array has to be > 0");
 					return;
 				}
 				desc = VariableDescFactory.INSTANCE.createField(VariableType.ARRAY, true);
-				LOGGER.semanticInfo(node, "" + name + "=" + "[" + size + "]");
+				desc.setValue(size);
+				codeBuilder.addArrayInitialization(name, size);
 			}
 		}
 		rootScope.addVariable(name, desc);
@@ -139,22 +138,22 @@ public class ModuleAnalyzer {
 		String name = node.getTokenValue();
 		
 		FunctionDesc fnDesc = new FunctionDesc(name);
-
-		Optional<VariableDesc> returnVar = analyzeFunctionReturn((SimpleNode) node.jjtGetChild(0), fnDesc,
+		IrBuilder irBuilder = new IrBuilder(fnDesc);
+		codeBuilder.addIrBuilder(irBuilder);
+		Optional<VariableDesc> returnVar = analyzeFunctionReturn(node.jjtGetChild(0), fnDesc,
 				functionScope);
-		analyzeFunctionParameters((SimpleNode) node.jjtGetChild(1), fnDesc, functionScope);
+		analyzeFunctionParameters(  node.jjtGetChild(1), fnDesc, functionScope, irBuilder);
 
 		rootScope.addFunction(name, fnDesc);
-		SimpleNode statementsNode = (SimpleNode) node.jjtGetChild(2);
+		SimpleNode statementsNode =   node.jjtGetChild(2);
 		toAnalyze.add(() -> {
 			LOGGER.semanticInfo(node, "function: " + node.getTokenValue());
 
-			IrBuilder irBuilder = new IrBuilder(fnDesc);
-			codeBuilder.addIrBuilder(irBuilder);
 			
 			new StatementsAnalyzer(irBuilder).analyzeStatements(statementsNode, functionScope);
 
 			returnVar.ifPresent(desc -> {
+				irBuilder.addReturnValue(desc);
 				if (!desc.isInitialized())
 					LOGGER.semanticError(statementsNode, "return value is not initialized");
 			});
@@ -169,31 +168,37 @@ public class ModuleAnalyzer {
 		if (returnNode.jjtGetNumChildren() == 0) {
 			fnDesc.setReturnType(VariableType.NULL);
 		} else {
-			returnNode = (SimpleNode) returnNode.jjtGetChild(0);
+			returnNode =   returnNode.jjtGetChild(0);
 			if (returnNode.is(JJTARRAYVARIABLE)) {
 				retVar = VariableDescFactory.INSTANCE.createLocalVariable(VariableType.ARRAY, false);
 				fnDesc.setReturnType(VariableType.ARRAY);
 				functionScope.addVariable(returnNode.getTokenValue(), retVar);
 			} else if (returnNode.is(JJTSCALARVARIABLE)) {
-				fnDesc.setReturnType(VariableType.SCALAR);
 				retVar = VariableDescFactory.INSTANCE.createLocalVariable(VariableType.SCALAR, false);
+				fnDesc.setReturnType(VariableType.SCALAR);
 				functionScope.addVariable(returnNode.getTokenValue(), retVar);
 			}
 		}
 		return Optional.ofNullable(retVar);
 	}
 
-	private void analyzeFunctionParameters(SimpleNode parametersNode, FunctionDesc fnDesc, Scope functionScope) {
+	private void analyzeFunctionParameters(SimpleNode parametersNode, FunctionDesc fnDesc, Scope functionScope, IrBuilder irBuilder) {
+		Integer counter = 0;
 		if (parametersNode.getChildren() != null)
 			for (Node n : parametersNode.getChildren()) {
 				SimpleNode parameter = (SimpleNode) n;
 				if (parameter.is(JJTARRAYVARIABLE)) {
 					fnDesc.addArumentType(VariableType.ARRAY);
-					functionScope.addVariable(parameter.getTokenValue(), VariableDescFactory.INSTANCE.createLocalVariable(VariableType.ARRAY, true));
+					VariableDesc paramDesc = VariableDescFactory.INSTANCE.createLocalVariable(VariableType.ARRAY, true);
+					functionScope.addVariable(parameter.getTokenValue(), paramDesc);
+					irBuilder.addParameter(paramDesc);
 				} else if (parameter.is(JJTSCALARVARIABLE)) {
+					VariableDesc paramDesc = VariableDescFactory.INSTANCE.createLocalVariable(VariableType.SCALAR, true);
 					fnDesc.addArumentType(VariableType.SCALAR);
-					functionScope.addVariable(parameter.getTokenValue(), VariableDescFactory.INSTANCE.createLocalVariable(VariableType.SCALAR, true));
+					functionScope.addVariable(parameter.getTokenValue(), paramDesc);
+					irBuilder.addParameter(paramDesc);
 				}
+				counter++;
 			}
 	}
 }

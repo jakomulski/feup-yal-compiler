@@ -31,8 +31,13 @@ public Node[] getChildren() {
 	}
 
 	public String getTokenValue() {
+		String value = "";
+		
+		if(this.value != null)
+			value = this.value.toString();
+		
 		if (jjtToken != null && jjtToken.image != null)
-			return jjtToken.image;
+			return value+jjtToken.image;
 		return "";
 	}
 
@@ -65,8 +70,8 @@ public Node[] getChildren() {
     children[i] = n;
   }
 
-  public Node jjtGetChild(int i) {
-    return children[i];
+  public SimpleNode jjtGetChild(int i) {
+    return (SimpleNode)children[i];
   }
 
   public int jjtGetNumChildren() {

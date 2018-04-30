@@ -1061,9 +1061,9 @@ void CallOrAccess()       :
 /*@egen*/         
 | "."
   (
-    (/*@bgen(jjtree) #Module( 1) */
+    (/*@bgen(jjtree) #ModuleAccess( 1) */
       {
-        SimpleNode jjtn003 = new SimpleNode(JJTMODULE);
+        SimpleNode jjtn003 = new SimpleNode(JJTMODULEACCESS);
         boolean jjtc003 = true;
         jjtree.openNodeScope(jjtn003);
         jjtreeOpenNodeScope(jjtn003);
@@ -1088,7 +1088,7 @@ void CallOrAccess()       :
           jjtreeCloseNodeScope(jjtn003);
         }
       }
-/*@egen*/           
+/*@egen*/                 
   )/*@bgen(jjtree) #Call( 2) */
   {
     SimpleNode jjtn004 = new SimpleNode(JJTCALL);

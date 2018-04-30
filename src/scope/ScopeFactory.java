@@ -7,7 +7,8 @@ public enum ScopeFactory {
 	
 	private ModuleScope rootScope = new ModuleScope();
 	
-	public ModuleScope getModuleScope(){
+	public ModuleScope getModuleScope(String name){
+		rootScope.setModuleName(name);
 		return rootScope;
 	}
 	public Scope createSimpleScope(Scope scope){

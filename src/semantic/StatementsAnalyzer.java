@@ -1,11 +1,12 @@
 package semantic;
 
-import static semantic.Common.cast;
 import static semantic.Common.checkSizeOf;
 import static yal2jvm.Yal2jvmTreeConstants.*;
 
 import custom.Logger;
 import ir.IrBuilder;
+import ir.LabelStatement.LabelType;
+import ir.Statement;
 import scope.BlockedSimpleScope;
 import scope.FunctionDesc;
 import scope.Scope;
@@ -19,17 +20,17 @@ import yal2jvm.SimpleNode;
 public class StatementsAnalyzer {
 	private final Logger LOGGER = Logger.INSTANCE;
 	private final IrBuilder irBuilder;
-	
-	public StatementsAnalyzer(IrBuilder irBuilder){
+
+	public StatementsAnalyzer(IrBuilder irBuilder) {
 		this.irBuilder = irBuilder;
 	}
-	
+
 	public void analyzeStatements(SimpleNode node, Scope scope) {
 		if (node.jjtGetNumChildren() == 0)
 			return;
 		for (Node n : node.getChildren()) {
 			SimpleNode statement = (SimpleNode) n;
-						
+
 			if (statement.is(JJTCALL)) {
 				analyzeCall(statement, scope);
 				irBuilder.addStatement(statement, scope);
@@ -37,69 +38,86 @@ public class StatementsAnalyzer {
 				analyzeAssign(statement, scope);
 				irBuilder.addStatement(statement, scope);
 			} else if (statement.is(JJTWHILE)) {
+				Statement loopRef = irBuilder.addStatement(statement, scope);
 				LOGGER.semanticInfo(node, "loop");
 
-				SimpleNode condition = cast(statement.jjtGetChild(0));
-				SimpleNode lhs = cast(condition.jjtGetChild(0));
-				SimpleNode rhs = cast(condition.jjtGetChild(1));
+				SimpleNode condition = statement.jjtGetChild(0);
+				SimpleNode lhs = condition.jjtGetChild(0);
+				SimpleNode rhs = condition.jjtGetChild(1);
 
-				checkRhs(lhs, scope, VariableDescFactory.INSTANCE.createField(VariableType.SCALAR, false));
-				checkRhs(rhs, scope, VariableDescFactory.INSTANCE.createField(VariableType.SCALAR, false));
+				checkRhs(lhs, scope, VariableDescFactory.INSTANCE.createLocalVariable(VariableType.SCALAR, false));
+				checkRhs(rhs, scope, VariableDescFactory.INSTANCE.createLocalVariable(VariableType.SCALAR, false));
 
-				SimpleNode statements = cast(statement.jjtGetChild(1));
+				SimpleNode statements = statement.jjtGetChild(1);
 				analyzeStatements(statements, ScopeFactory.INSTANCE.createBlockedScope(scope));
+				irBuilder.addLabelStatement(loopRef, LabelType.LOOP);
 			} else if (statement.is(JJTIF)) {
+				Statement ifRef = irBuilder.addStatement(statement, scope);
+				ifRef.setName("if");
+				
 				LOGGER.semanticInfo(node, "if");
 
-				SimpleNode condition = cast(statement.jjtGetChild(0));
-				SimpleNode lhs = cast(condition.jjtGetChild(0));
-				SimpleNode rhs = cast(condition.jjtGetChild(1));
+				SimpleNode condition = statement.jjtGetChild(0);
+				SimpleNode lhs = condition.jjtGetChild(0);
+				SimpleNode rhs = condition.jjtGetChild(1);
 
-				checkRhs(lhs, scope, VariableDescFactory.INSTANCE.createField(VariableType.SCALAR, false));
-				checkRhs(rhs, scope, VariableDescFactory.INSTANCE.createField(VariableType.SCALAR, false));
-
+				checkRhs(lhs, scope, VariableDescFactory.INSTANCE.createLocalVariable(VariableType.SCALAR, false));
+				checkRhs(rhs, scope, VariableDescFactory.INSTANCE.createLocalVariable(VariableType.SCALAR, false));
+				
 				BlockedSimpleScope ifScope = ScopeFactory.INSTANCE.createBlockedScope(scope);
+				
 				BlockedSimpleScope elseScope = ScopeFactory.INSTANCE.createBlockedScope(scope);
 
-				SimpleNode ifStatements = cast(statement.jjtGetChild(1));
+				SimpleNode ifStatements = statement.jjtGetChild(1);
 				analyzeStatements(ifStatements, ifScope);
+				
 				if (statement.jjtGetNumChildren() == 3) {
-					SimpleNode elseStatements = cast(statement.jjtGetChild(2));
+					irBuilder.addLabelStatement(ifRef, LabelType.ELSE);
+					SimpleNode elseStatements = statement.jjtGetChild(2);
 					analyzeStatements(elseStatements, elseScope);
+					irBuilder.addLabelStatement(ifRef, LabelType.ELSE_END);
 				}
-
+				else
+					irBuilder.addLabelStatement(ifRef, LabelType.IF_END);	
 				scope.mergeInitialized(ifScope, elseScope);
 			}
 		}
 
 	}
 
-	private void analyzeCall(SimpleNode node, Scope scope) {
-		SimpleNode nameNode = cast(node.jjtGetChild(0));
+	private VariableType analyzeCall(SimpleNode node, Scope scope) {
+		SimpleNode nameNode = node.jjtGetChild(0);
+		SimpleNode argumentsNode = node.jjtGetChild(1);
+		
 		if (nameNode.is(JJTMODULEACCESS)) {
 			LOGGER.semanticInfo(node,
-					"call " + nameNode.getTokenValue() + "." + cast(nameNode.jjtGetChild(0)).getTokenValue());
-			return; // CANNOT BE CHECKED
+					"call " + nameNode.getTokenValue() + "." + nameNode.jjtGetChild(0).getTokenValue());
+			
+			for (int i = 0; i < argumentsNode.jjtGetNumChildren(); ++i) {
+				checkRhs(argumentsNode.jjtGetChild(i), scope, VariableDescFactory.INSTANCE.createLocalVariable(VariableType.ANY, false));
+			}
+			
+			return VariableType.ANY; // CANNOT BE CHECKED
 		}
 
 		String name = nameNode.getTokenValue();
 
 		if (!scope.hasFunction(name)) {
 			LOGGER.semanticError(node, "missing funtion");
-			return;
+			return VariableType.NULL;
 		}
 
 		FunctionDesc desc = scope.getFunction(name);
-		SimpleNode argumentsNode = SimpleNode.class.cast(node.jjtGetChild(1));
 
 		if (desc.getParamsNum() != argumentsNode.jjtGetNumChildren()) {
 			LOGGER.semanticError(node, "incorrect number of parameters");
 		} else {
 			for (int i = 0; i < desc.getParamsNum(); ++i) {
-				checkArgument((SimpleNode) argumentsNode.jjtGetChild(i), scope, desc.getArumentsTypes().get(i));
+				checkArgument(argumentsNode.jjtGetChild(i), scope, desc.getArumentsTypes().get(i));
 			}
 		}
 
+		return desc.getReturnType();
 	}
 
 	private void checkArgument(SimpleNode var, Scope scope, VariableType paramDesc) {
@@ -118,32 +136,35 @@ public class StatementsAnalyzer {
 	}
 
 	private void analyzeAssign(SimpleNode node, Scope scope) {
-		SimpleNode access = (SimpleNode) node.jjtGetChild(0);
+		SimpleNode access =   node.jjtGetChild(0);
 		VariableDesc desc = null;
 		String name = access.getTokenValue();
 
 		if (access.is(JJTVARIABLE)) {
-			if (!scope.hasVariable(name))
-				scope.addVariable(name, VariableDescFactory.INSTANCE.createField(VariableType.ANY, false));
+			if (!scope.hasVariable(name)) {
+				VariableDesc newDesc = VariableDescFactory.INSTANCE.createLocalVariable(VariableType.ANY, false);
+				scope.addVariable(name, newDesc);
+				irBuilder.addVariable(newDesc);
+			}
 			desc = scope.getVariable(name);
 			LOGGER.semanticInfo(access, "set " + name);
 
 		} else if (access.is(JJTARRAYACCESS)) {
 			// TODO: check the type
 			checkArrayAccess(access, scope);
-			desc = VariableDescFactory.INSTANCE.createField(VariableType.SCALAR, true);
+			desc = VariableDescFactory.INSTANCE.createLocalVariable(VariableType.SCALAR, true);
 		}
 
-		checkRhs(cast(node.jjtGetChild(1)), scope, desc);
+		checkRhs(node.jjtGetChild(1), scope, desc);
 	}
 
 	private void checkArrayAccess(SimpleNode node, Scope scope) {
 		String name = node.getTokenValue();
 		if (!Common.checkUndeclaredAndUninitialized(scope, node)) {
 		} else {
-			String indexValue = cast(node.jjtGetChild(0)).getTokenValue();
+			String indexValue = node.jjtGetChild(0).getTokenValue();
 			if (!Common.isInt(indexValue)) {
-				if (!Common.checkUndeclaredAndUninitialized(scope, cast(node.jjtGetChild(0)))) {
+				if (!Common.checkUndeclaredAndUninitialized(scope, node.jjtGetChild(0))) {
 				} else if (scope.getVariable(indexValue).is(scope.getVariable(name).getType()))
 					LOGGER.semanticError(node, "wrong type");
 				else
@@ -156,11 +177,11 @@ public class StatementsAnalyzer {
 	private void checkRhsArrayAssign(SimpleNode assignment, Scope scope, VariableDesc desc) {
 		if (desc.is(VariableType.ANY) || desc.is(VariableType.ARRAY)) {
 			desc.setType(VariableType.ARRAY);
-			SimpleNode nameNode = cast(assignment.jjtGetChild(0));
+			SimpleNode nameNode = assignment.jjtGetChild(0);
 
 			if (nameNode.is(JJTINTEGER)) {
 				desc.initialize();
-				int size = Integer.parseInt(cast(assignment.jjtGetChild(0)).getTokenValue());
+				int size = Integer.parseInt(assignment.jjtGetChild(0).getTokenValue());
 				desc.setType(VariableType.ARRAY);
 
 				LOGGER.semanticInfo(assignment, "load " + size);
@@ -189,21 +210,11 @@ public class StatementsAnalyzer {
 	}
 
 	private void checkRhs(SimpleNode assignment, Scope scope, VariableDesc desc) {
-		// SimpleNode access = (SimpleNode) node.jjtGetChild(0);
+		// SimpleNode access =   node.jjtGetChild(0);
 
 		if (assignment.is(JJTARRAY)) {
 			checkRhsArrayAssign(assignment, scope, desc);
-			return;
-		} else if (desc.is(VariableType.ARRAY)) { // sets all elements of array
-			if (Common.isUninitialized(desc, assignment)) {
-				return;
-			} else {
-				LOGGER.semanticInfo(assignment, "sets all elemets of array");
-				desc.setType(VariableType.SCALAR);
-			}
-		}
-
-		if (assignment.is(JJTVARIABLE)) {
+		} else if (assignment.is(JJTVARIABLE)) {
 			String name = assignment.getTokenValue();
 			if (!Common.checkUndeclaredAndUninitialized(scope, assignment)) {
 				return;
@@ -222,23 +233,34 @@ public class StatementsAnalyzer {
 			if (desc.is(VariableType.ANY))
 				desc.setType(VariableType.SCALAR);
 			LOGGER.semanticInfo(assignment, assignment.getTokenValue());
-			checkRhs(cast(assignment.jjtGetChild(0)), scope, desc);
-			checkRhs(cast(assignment.jjtGetChild(1)), scope, desc);
+			checkRhs(assignment.jjtGetChild(0), scope, desc);
+			checkRhs(assignment.jjtGetChild(1), scope, desc);
 		} else if (assignment.is(JJTNEGATION)) {
 			if (desc.is(VariableType.ANY))
 				desc.setType(VariableType.SCALAR);
 			LOGGER.semanticInfo(assignment, "negation");
-			checkRhs(cast(assignment.jjtGetChild(0)), scope, desc);
+			checkRhs(assignment.jjtGetChild(0), scope, desc);
 		} else if (assignment.is(JJTCALL)) {
-			analyzeCall(assignment, scope);
+			VariableType returnType = analyzeCall(assignment, scope);
+			if (desc.is(VariableType.ANY))
+				desc.setType(returnType);
+
+			else if (!desc.is(returnType)) {
+				LOGGER.semanticError(assignment, "incorrect type " + desc.getType() + " " + returnType);
+			}
 		} else if (assignment.is(JJTSIZEOF)) {
 			checkSizeOf(assignment, scope);
 		} else if (assignment.is(JJTARRAYACCESS)) {
+			if (desc.is(VariableType.ANY))
+				desc.setType(VariableType.SCALAR);
 			checkArrayAccess(assignment, scope);
 		} else if (assignment.is(JJTMODULEACCESS)) {
 			LOGGER.semanticInfo(assignment,
-					"load " + assignment.getTokenValue() + "." + cast(assignment.jjtGetChild(0)).getTokenValue());
+					"load " + assignment.getTokenValue() + "." + assignment.jjtGetChild(0).getTokenValue());
+		} else if (assignment.is(JJTSTRING)) {
+			//DO NOTHING
 		}
+
 		desc.initialize();
 	}
 }
