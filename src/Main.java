@@ -12,8 +12,6 @@ public class Main {
 	public static final Logger LOGGER = Logger.INSTANCE;
 
 	public static void main(String[] args) throws ParseException, FileNotFoundException {
-		// LOGGER.info("Reading from standard input...");
-		// new Yal2jvm();
 		//String input = "./examples/programa3.yal";
 		String input = args[0];
 		SimpleNode module = new Yal2jvm(new java.io.FileInputStream(input)).Start();
