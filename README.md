@@ -13,6 +13,7 @@
 	- conditional instructions
 	- loops
 	- arrays
+	- stack size calculation
 	
 ## Examples ###
  
