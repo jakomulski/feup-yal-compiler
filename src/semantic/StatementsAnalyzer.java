@@ -6,6 +6,7 @@ import static yal2jvm.Yal2jvmTreeConstants.*;
 import custom.Logger;
 import ir.IrBuilder;
 import ir.LabelStatement.LabelType;
+import ir.NameGenerator;
 import ir.Statement;
 import scope.BlockedSimpleScope;
 import scope.FunctionDesc;
@@ -38,8 +39,14 @@ public class StatementsAnalyzer {
 				analyzeAssign(statement, scope);
 				irBuilder.addStatement(statement, scope);
 			} else if (statement.is(JJTWHILE)) {
-				Statement loopRef = irBuilder.addStatement(statement, scope);
-				LOGGER.semanticInfo(node, "loop");
+				Statement loopLabel = new Statement();
+				Statement endLoopLabel = new Statement();
+				Statement goToLoop = new Statement().setRef(loopLabel);
+				
+				irBuilder.addLabelStatement(loopLabel);
+				
+				irBuilder.addStatement(statement, scope).setRef(endLoopLabel);
+				
 
 				SimpleNode condition = statement.jjtGetChild(0);
 				SimpleNode lhs = condition.jjtGetChild(0);
@@ -50,13 +57,20 @@ public class StatementsAnalyzer {
 
 				SimpleNode statements = statement.jjtGetChild(1);
 				analyzeStatements(statements, ScopeFactory.INSTANCE.createBlockedScope(scope));
-				irBuilder.addLabelStatement(loopRef, LabelType.LOOP);
-			} else if (statement.is(JJTIF)) {
-				Statement ifRef = irBuilder.addStatement(statement, scope);
-				ifRef.setName("if");
 				
-				LOGGER.semanticInfo(node, "if");
+				irBuilder.addGoToStatement(goToLoop);
+				irBuilder.addLabelStatement(endLoopLabel);
+				
+			} else if (statement.is(JJTIF)) {
 
+				
+				Statement endIfLabel = new Statement();
+				Statement endElseLabel = new Statement();
+				Statement goToEndElse = new Statement().setRef(endElseLabel);
+				
+				irBuilder.addStatement(statement, scope).setRef(endIfLabel);
+				
+				
 				SimpleNode condition = statement.jjtGetChild(0);
 				SimpleNode lhs = condition.jjtGetChild(0);
 				SimpleNode rhs = condition.jjtGetChild(1);
@@ -72,13 +86,15 @@ public class StatementsAnalyzer {
 				analyzeStatements(ifStatements, ifScope);
 				
 				if (statement.jjtGetNumChildren() == 3) {
-					irBuilder.addLabelStatement(ifRef, LabelType.ELSE);
+					irBuilder.addGoToStatement(goToEndElse);
+					irBuilder.addLabelStatement(endIfLabel);
 					SimpleNode elseStatements = statement.jjtGetChild(2);
 					analyzeStatements(elseStatements, elseScope);
-					irBuilder.addLabelStatement(ifRef, LabelType.ELSE_END);
+					
+					irBuilder.addLabelStatement(endElseLabel);
 				}
 				else
-					irBuilder.addLabelStatement(ifRef, LabelType.IF_END);	
+					irBuilder.addLabelStatement(endIfLabel);	
 				scope.mergeInitialized(ifScope, elseScope);
 			}
 		}

@@ -140,7 +140,7 @@ public class ModuleAnalyzer {
 		FunctionDesc fnDesc = new FunctionDesc(name);
 		IrBuilder irBuilder = new IrBuilder(fnDesc);
 		codeBuilder.addIrBuilder(irBuilder);
-		Optional<VariableDesc> returnVar = analyzeFunctionReturn(node.jjtGetChild(0), fnDesc,
+		VariableDesc returnVar = analyzeFunctionReturn(node.jjtGetChild(0), fnDesc,
 				functionScope);
 		analyzeFunctionParameters(  node.jjtGetChild(1), fnDesc, functionScope, irBuilder);
 
@@ -149,26 +149,24 @@ public class ModuleAnalyzer {
 		toAnalyze.add(() -> {
 			LOGGER.semanticInfo(node, "function: " + node.getTokenValue());
 
-			
 			new StatementsAnalyzer(irBuilder).analyzeStatements(statementsNode, functionScope);
-
-			returnVar.ifPresent(desc -> {
-				irBuilder.addReturnValue(desc);
-				if (!desc.isInitialized())
-					LOGGER.semanticError(statementsNode, "return value is not initialized");
-			});
+						
+			irBuilder.addReturnValue(returnVar);
+			if (!returnVar.isInitialized())
+				LOGGER.semanticError(statementsNode, "return value is not initialized");
 			
-			// TODO -> WARNING parameters
+			// TODO -> WARNINGS
 		});
 	}
 
-	private Optional<VariableDesc> analyzeFunctionReturn(SimpleNode returnNode, FunctionDesc fnDesc,
+	private VariableDesc analyzeFunctionReturn(SimpleNode returnNode, FunctionDesc fnDesc,
 			Scope functionScope) {
 		VariableDesc retVar = null;
 		if (returnNode.jjtGetNumChildren() == 0) {
+			retVar = VariableDescFactory.INSTANCE.createLocalVariable(VariableType.NULL, true);
 			fnDesc.setReturnType(VariableType.NULL);
 		} else {
-			returnNode =   returnNode.jjtGetChild(0);
+			returnNode = returnNode.jjtGetChild(0);
 			if (returnNode.is(JJTARRAYVARIABLE)) {
 				retVar = VariableDescFactory.INSTANCE.createLocalVariable(VariableType.ARRAY, false);
 				fnDesc.setReturnType(VariableType.ARRAY);
@@ -179,7 +177,7 @@ public class ModuleAnalyzer {
 				functionScope.addVariable(returnNode.getTokenValue(), retVar);
 			}
 		}
-		return Optional.ofNullable(retVar);
+		return retVar;
 	}
 
 	private void analyzeFunctionParameters(SimpleNode parametersNode, FunctionDesc fnDesc, Scope functionScope, IrBuilder irBuilder) {

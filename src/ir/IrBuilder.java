@@ -13,11 +13,12 @@ import static yal2jvm.Yal2jvmTreeConstants.JJTVARIABLE;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
-import ir.LabelStatement.LabelType;
+import custom.StackSizeCounter;
 import scope.FunctionDesc;
 import scope.Scope;
 import scope.VariableDesc;
@@ -27,15 +28,17 @@ import yal2jvm.Node;
 import yal2jvm.SimpleNode;
 
 public class IrBuilder {
+	private final StackSizeCounter stackSizeCounter;
+
 	private final FunctionDesc functionDesc;
 	private final List<Statement> statements = new ArrayList<>();
 
 	private final List<VariableDesc> localVariables = new ArrayList<>();
 	private final List<VariableDesc> parameters = new ArrayList<>();
-	private Optional<VariableDesc> returnValue = Optional.empty();
 
 	public IrBuilder(FunctionDesc desc) {
 		this.functionDesc = desc;
+		stackSizeCounter = new StackSizeCounter();
 	}
 
 	public void addVariable(VariableDesc desc) {
@@ -48,21 +51,37 @@ public class IrBuilder {
 
 	public void addReturnValue(VariableDesc desc) {
 		parameters.add(desc);
-		returnValue = Optional.of(desc);
+		Statement statement = new Statement(new SimpleNode(-1), null);
+		statements.add(statement);
+		if (desc.getType().equals(VariableType.NULL))
+			statement.returnn();
+		else {
+			statement.iload(desc);
+			statement.ireturn();
+		}
 	}
 
 	public Statement addStatement(SimpleNode node, Scope scope) {
 		Statement statement = new Statement(node, scope);
+		statement.setRef(statement);
+		statement.setStackSizeCounter(stackSizeCounter);
 		statements.add(statement);
 		return statement;
 	}
 
-	public void addLabelStatement(Statement ref, LabelType type) {
-		statements.add(new LabelStatement(ref, type));
+	public void addGoToStatement(Statement statement) {
+		statement.append(() -> "goto " + statement.getRef().getName());
+		statements.add(statement);
+	}
+
+	public Statement addLabelStatement(Statement statement) {
+		statement.append(() -> statement.getName() + ":");
+		statements.add(statement);
+		return statement;
 	}
 
 	public List<String> build() {
-		//registerAlocation();
+		registerAlocation();
 
 		List<String> lines = new ArrayList<>();
 		generate(lines);
@@ -76,25 +95,20 @@ public class IrBuilder {
 	}
 
 	private void generate(List<String> lines) {
-		lines.add(".method public static " + functionDesc.asJasmin());
+		List<Supplier<String>> supLines = new ArrayList<>();
+		
+		supLines.add(()->".method public static " + functionDesc.asJasmin());
 		int numberOfLocals = parameters.size() + localVariables.size();
-		lines.add(".limit locals " + Integer.toString(numberOfLocals));
-		lines.add("");
+		supLines.add(()->".limit locals " + Integer.toString(numberOfLocals));
+		supLines.add(()->".limit stack "+stackSizeCounter.getStackSize());
 		statements.forEach(statement -> {
 			generateStatement(statement, statement.getNode());
-			lines.addAll(statement.getValue().stream().map(s -> s.get()).collect(Collectors.toList()));
-			lines.add("");
+			supLines.addAll(statement.getValue());
+			supLines.add(()->"");
 		});
+		supLines.add(()->".end method");
 		
-		if(returnValue.isPresent()){
-			VariableDesc r = returnValue.get();
-			lines.add("iload "+r.getName());
-			lines.add("ireturn");
-		} else{
-			lines.add("return");
-		}
-		
-		lines.add(".end method");
+		lines.addAll(supLines.stream().map(l->l.get()).collect(Collectors.toList()));
 	}
 
 	private void generateStatement(Statement statement, SimpleNode node) {
@@ -114,7 +128,6 @@ public class IrBuilder {
 	}
 
 	private void generateLoop(Statement statement, SimpleNode node) {
-		statement.label(NameGenerator.INSTANCE.getLoopName());
 		SimpleNode conditionNode = node.jjtGetChild(0);
 		String condition = conditionNode.getTokenValue();
 		generateRHS(statement, conditionNode.jjtGetChild(0));
@@ -123,7 +136,6 @@ public class IrBuilder {
 	}
 
 	private void generateIf(Statement statement, SimpleNode node) {
-		statement.setName(NameGenerator.INSTANCE.getIfName());
 		SimpleNode conditionNode = node.jjtGetChild(0);
 		String condition = conditionNode.getTokenValue();
 		generateRHS(statement, conditionNode.jjtGetChild(0));
@@ -137,11 +149,11 @@ public class IrBuilder {
 		if (var.is(JJTARRAYACCESS)) {
 			String name = var.getTokenValue();
 			String index = var.jjtGetChild(0).getTokenValue();
-			statement.aload(name);
+			statement.aload(statement.scope.getVariable(name));
 			if (Common.isInt(index))
 				statement.bipush(index);
 			else
-				statement.iload(index);
+				statement.iload(statement.scope.getVariable(index));
 
 			generateRHS(statement, (SimpleNode) node.jjtGetChild(1));
 			statement.iastore();
@@ -154,20 +166,18 @@ public class IrBuilder {
 		VariableDesc varDesc = statement.scope.getVariable(varName);
 
 		if (varDesc.isField())
-			statement.putstatic(varName);
+			statement.putstatic(varDesc);
 		else if (varDesc.is(VariableType.SCALAR))
-			statement.istore(varName);
+			statement.istore(varDesc);
 		else if (varDesc.is(VariableType.ANY)) // functions by default return
 												// scalar
-			statement.istore(varName);
+			statement.istore(varDesc);
 		else if (varDesc.is(VariableType.ARRAY))
-			statement.astore(varName);
+			statement.astore(varDesc);
 
 		statement.setType(varDesc);
 
 	}
-	
-	
 
 	private void generateRHS(Statement statement, SimpleNode assignment) {
 		if (assignment.is(JJTARRAY)) {
@@ -176,9 +186,9 @@ public class IrBuilder {
 		} else if (assignment.is(JJTVARIABLE)) {
 			String name = assignment.getTokenValue();
 			if (statement.scope.getVariable(name).is(VariableType.SCALAR))
-				statement.iload(assignment.getTokenValue());
+				statement.iload(statement.scope.getVariable(assignment.getTokenValue()));
 			else {
-				statement.aload(assignment.getTokenValue());
+				statement.aload(statement.scope.getVariable(assignment.getTokenValue()));
 			}
 		} else if (assignment.is(JJTINTEGER)) {
 			statement.bipush(assignment.getTokenValue());
@@ -192,20 +202,19 @@ public class IrBuilder {
 		} else if (assignment.is(JJTCALL)) {
 			generateCall(statement, assignment);
 		} else if (assignment.is(JJTSIZEOF)) {
-			statement.aload(assignment.jjtGetChild(0).getTokenValue()); // Sizeof
-																		// ->
-																		// Variable
+			statement.aload(statement.scope.getVariable(assignment.jjtGetChild(0).getTokenValue())); // Sizeof
+			// ->
+			// Variable
 			statement.arraylength();
 		} else if (assignment.is(JJTARRAYACCESS)) {
 			String name = assignment.getTokenValue();
 			String index = assignment.jjtGetChild(0).getTokenValue();
-			statement.aload(name);
+			statement.aload(statement.scope.getVariable(name));
 			if (Common.isInt(index))
 				statement.bipush(index);
 			else
-				statement.iload(index);
+				statement.iload(statement.scope.getVariable(index));
 			statement.iaload();
-			// statement.append(assignment.toString());
 		} else if (assignment.is(JJTMODULEACCESS)) {
 			// IMPOSSIBLE
 		} else if (assignment.is(JJTSTRING)) {
@@ -225,18 +234,16 @@ public class IrBuilder {
 		String module = moduleAccessNode.getTokenValue();
 		String name = moduleAccessNode.jjtGetChild(0).getTokenValue();
 
-		StringBuilder args = new StringBuilder();
+		List<String> args = new ArrayList<>();
 
 		SimpleNode argsNode = node.jjtGetChild(1);
 		if (argsNode.jjtGetNumChildren() > 0)
 			for (Node n : argsNode.getChildren()) {
 				generateRHS(statement, (SimpleNode) n);
-				args.append(parseArg(statement, (SimpleNode) n));
+				args.add(parseArg(statement, (SimpleNode) n));
 			}
 
-		statement
-				.append(() -> "invoke " + module + "/" + name + "(" + args.toString() + ")" + statement.typeAsJasmin());
-
+		statement.invokestatic(module, name, args);
 	}
 
 	private String parseArg(Statement statement, SimpleNode node) {
@@ -260,7 +267,7 @@ public class IrBuilder {
 		}
 		loadArguments(statement, node.jjtGetChild(1));
 		String name = node.jjtGetChild(0).getTokenValue();
-		statement.invokestatic(statement.scope.getModuleName() + "/" + statement.scope.getFunction(name).asJasmin());
+		statement.invokestatic(name);
 
 	}
 }

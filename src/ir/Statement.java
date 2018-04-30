@@ -2,8 +2,11 @@ package ir;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
+import custom.StackSizeCounter;
+import scope.FunctionDesc;
 import scope.Scope;
 import scope.VariableDesc;
 import scope.VariableDescFactory;
@@ -12,46 +15,105 @@ import yal2jvm.SimpleNode;
 
 public class Statement {
 
+	private StackSizeCounter stackSizeCounter = null;
 	private SimpleNode node;
 	Scope scope;
 	private Statement ref = null;
+
+	public Statement getRef() {
+		return ref;
+	}
+
+	private void incrementStackSize() {
+		if(stackSizeCounter != null)
+			stackSizeCounter.increment();
+	}
+
+	private void decrementStackSize() {
+		if(stackSizeCounter != null)
+			stackSizeCounter.decrement();
+	}
 	
-	public Statement(SimpleNode node, Scope scope) { 
+
+	public void setStackSizeCounter(StackSizeCounter stackSizeCounter) {
+		this.stackSizeCounter = stackSizeCounter;
+	}
+
+	public Statement setRef(Statement ref) {
+		this.ref = ref;
+		return this;
+	}
+
+	public Statement() {
+		this.node = new SimpleNode(-1);
+		this.name = NameGenerator.INSTANCE.getName();
+	}
+
+	public Statement(SimpleNode node, Scope scope) {
 		this.node = node;
 		this.scope = scope;
 	}
 
 	private final List<Supplier<String>> stringValue = new ArrayList<>();
 	private VariableDesc type = VariableDescFactory.INSTANCE.createField(VariableType.NULL, false);
-	
-	public void append(Supplier<String> text){
-		stringValue.add(()->text.get());
+
+	public List<Supplier<String>> getValue() {
+		return stringValue;
+	}
+
+	private String name;
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public SimpleNode getNode() {
+		return node;
+	}
+
+	public Scope getScope() {
+		return scope;
 	}
 	
-	public void append(String text){
-		stringValue.add(()->text);
+	public void append(Supplier<String> text) {
+		stringValue.add(() -> text.get());
 	}
-	
-	public void bipush(String value){
-		append("bipush "+value);
+
+	public void append(String text) {
+		stringValue.add(() -> text);
 	}
-	
-	public void istore(String value){
-		String name = scope.getVariable(value).getName();
-		append("istore "+name);
+
+	public void bipush(String value) {
+		append("bipush " + value);
+		incrementStackSize();
 	}
-	
-	public void iload(String value){
-		String name = scope.getVariable(value).getName();
-		append("iload "+name);
+
+	public void istore(VariableDesc value) {
+		decrementStackSize();
+		append("istore " + value.getName());
 	}
-	
+
+	public void iload(VariableDesc value) {
+		incrementStackSize();
+		append("iload " + value.getName());
+	}
+
 	public void ineg() {
+		incrementStackSize();
+		decrementStackSize();
 		append("ineg");
 	}
 
 	public void operator(String tokenValue) {
-		switch(tokenValue){
+		decrementStackSize();
+		decrementStackSize();
+		incrementStackSize();
+		
+		switch (tokenValue) {
 		case "+":
 			append("iadd");
 			return;
@@ -82,104 +144,92 @@ public class Statement {
 		case "^":
 			append("ixor");
 			return;
-		} 
-	}
-	
-	public List<Supplier<String>> getValue(){
-		return stringValue;
-	}
-	
-	private String name;
-	public String getName() {
-		return name;
-	}
-	public void setName(String name) {
-		this.name = name;
-	}
-	
-	public SimpleNode getNode() {
-		return node;
+		}
 	}
 
-	public Scope getScope() {
-		return scope;
-	}
 
 	public void ldc(String value) {
-		append("ldc "+value);
+		incrementStackSize();
+		append("ldc " + value);
 	}
 
-	public void aload(String value) {
-		String name = scope.getVariable(value).getName();
-		append("aload "+name);
-		
+	public void aload(VariableDesc value) {
+		incrementStackSize();
+		append("aload " + value.getName());
+
 	}
 
 	public void iastore() {
+		decrementStackSize();
+		decrementStackSize();
+		decrementStackSize();
 		append("iastore");
-		
+
 	}
 
 	public void newarray() {
+		decrementStackSize();
+		incrementStackSize();
 		append("newarray int");
 	}
 
-	public void astore(String value) {
-		append("astore " + scope.getVariable(value).getName());
-		
+	public void astore(VariableDesc value) {
+		decrementStackSize();
+		append("astore " + value.getName());
+
 	}
 
-	public void putstatic(String value) {
-		VariableDesc varDesc= scope.getVariable(value);
-		if (varDesc.is(VariableType.SCALAR))
-			append("putstatic fields/"+value+" I");
-		else if(varDesc.is(VariableType.ARRAY))
-			append("putstatic fields/"+value+" [I");
-		
+	public void putstatic(VariableDesc value) {
+		decrementStackSize();
+		if (value.is(VariableType.SCALAR))
+			append("putstatic fields/" + value.getName() + " I");
+		else if (value.is(VariableType.ARRAY))
+			append("putstatic fields/" + value.getName() + " [I");
+
 	}
 
 	public void arraylength() {
+		decrementStackSize();
+		incrementStackSize();
 		append("arraylength");
-		
+
 	}
 
 	public void iaload() {
+		decrementStackSize();
+		decrementStackSize();
+		incrementStackSize();
 		append("iaload");
 	}
 
-	public void invokestatic(String value) {
-		append("invokestatic "+value);
+	public void invokestatic(String name) {
+		FunctionDesc fnDesc = scope.getFunction(name);
+		fnDesc.getArumentsTypes().forEach(e->decrementStackSize());
+		append(() -> "invokestatic " + scope.getModuleName() + "/" + fnDesc.asJasmin());
 	}
 
-	public void setType(VariableDesc type) {
-		this.type = type;	
+	public void invokestatic(String module, String name, List<String> args) {
+		args.forEach(e->decrementStackSize());
+		append(() -> "invokestatic " + module + "/" + name + "(" + String.join("", args) + ")" + typeAsJasmin());
 	}
+
 	
-	public VariableType getType() {
-		return this.type.getType();
-	}
+
 	
-	public String typeAsJasmin(){
-		if(type.getType().equals(VariableType.SCALAR) || type.getType().equals(VariableType.ANY))
-			return "I";
-		else if(type.getType().equals(VariableType.ARRAY))
-			return "[I";
-		else
-			return "V";
-	}
 
 	public void label(String value) {
-		this.name = value;
-		append(value+":");
-		
+		append(value + ":");
+
 	}
 
 	public void ificmp(String condition) {
-		append(mapCondition(condition)+" "+getName()+"_END");
+		decrementStackSize();
+		decrementStackSize();
+		append(mapCondition(condition) + " " + ref.getName());
 	}
-	
-	private String mapCondition(String condition){ //return opposite
-		switch(condition){
+
+	private String mapCondition(String condition) { // return opposite
+		switch (condition) {
 		case "==":
 			return "if_icmpne";
 		case "!=":
@@ -194,5 +244,32 @@ public class Statement {
 			return "if_icmpgt";
 		}
 		return "";
+	}
+
+	public void ireturn() {
+		append("ireturn");
+
+	}
+
+	public void returnn() {
+		decrementStackSize();
+		append("return");
+	}
+	
+	public void setType(VariableDesc type) {
+		this.type = type;
+	}
+	
+	public VariableType getType() {
+		return this.type.getType();
+	}
+
+	public String typeAsJasmin() {
+		if (type.getType().equals(VariableType.SCALAR) || type.getType().equals(VariableType.ANY))
+			return "I";
+		else if (type.getType().equals(VariableType.ARRAY))
+			return "[I";
+		else
+			return "V";
 	}
 }
