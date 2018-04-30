@@ -135,11 +135,21 @@ public class IrBuilder {
 		SimpleNode var = node.jjtGetChild(0);
 
 		if (var.is(JJTARRAYACCESS)) {
-			generateAssignArrayAccess(statement, var);
-			return;
-		} //else: is not array access
+			String name = var.getTokenValue();
+			String index = var.jjtGetChild(0).getTokenValue();
+			statement.aload(name);
+			if (Common.isInt(index))
+				statement.bipush(index);
+			else
+				statement.iload(index);
 
-		generateRHS(statement, node.jjtGetChild(1));
+			generateRHS(statement, (SimpleNode) node.jjtGetChild(1));
+			statement.iastore();
+			return;
+		}
+
+		generateRHS(statement, (SimpleNode) node.jjtGetChild(1));
+
 		String varName = var.getTokenValue();
 		VariableDesc varDesc = statement.scope.getVariable(varName);
 
@@ -157,19 +167,7 @@ public class IrBuilder {
 
 	}
 	
-	private void generateAssignArrayAccess(Statement statement, SimpleNode node){
-		SimpleNode var = node.jjtGetChild(0);
-		String name = var.getTokenValue();
-		String index = var.jjtGetChild(0).getTokenValue();
-		statement.aload(name);
-		if (Common.isInt(index))
-			statement.bipush(index);
-		else
-			statement.iload(index);
-
-		generateRHS(statement,   node.jjtGetChild(1));
-		statement.iastore();
-	}
+	
 
 	private void generateRHS(Statement statement, SimpleNode assignment) {
 		if (assignment.is(JJTARRAY)) {
