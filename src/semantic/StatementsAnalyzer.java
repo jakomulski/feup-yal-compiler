@@ -5,7 +5,6 @@ import static yal2jvm.Yal2jvmTreeConstants.*;
 
 import custom.Logger;
 import ir.IrBuilder;
-import ir.LabelStatement.LabelType;
 import ir.NameGenerator;
 import ir.Statement;
 import scope.BlockedSimpleScope;
