@@ -4,11 +4,11 @@
 
 ## Second checkpoint ##
 
-1. semantic analysis
+- semantic analysis
 
-2. code generation
-- invocation of functions in
-- arithmetic expressions
-- conditional instructions
-- loops
-- arrays
+- code generation
+	- invocation of functions
+	- arithmetic expressions
+	- conditional instructions
+	- loops
+	- arrays
