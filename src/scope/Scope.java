@@ -29,6 +29,23 @@ public abstract class Scope {
 				this.getVariable(k).initialize();
 			}
 		});
+		
+		scope.variables.forEach((k,v)->{
+			
+			boolean isInitialized = true;
+			if(v.isInitialized()){
+				for(BlockedSimpleScope sc : args)
+					if(!sc.variables.containsKey(k) || !sc.variables.get(k).isInitialized())
+						isInitialized = false;
+			}
+			else{
+				isInitialized = false;
+			}
+			if(isInitialized){
+				this.addVariable(k, v);
+				
+			}
+		});
 	}
 	
 	public VariableDesc getVariable(String name){
