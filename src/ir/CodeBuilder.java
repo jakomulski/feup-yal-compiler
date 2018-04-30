@@ -2,6 +2,7 @@ package ir;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import scope.Scope;
 import yal2jvm.SimpleNode;
@@ -13,29 +14,35 @@ public class CodeBuilder {
 
 	private List<String> fieldsCode = new ArrayList<>();
 	private List<String> staticCode = new ArrayList<>();
-	
-	
-	public void build() {
-		System.out.println(".class public " + rootScope.getModuleName());
-		System.out.println(".super java/lang/Object");
-		System.out.println("");
-		
-		
-		fieldsCode.forEach(line -> System.out.println(line));
 
-		System.out.println("");
+	public String build() {
+		StringBuilder code = new StringBuilder();
+
+		Consumer<String> append = s -> {
+			code.append(s);
+			code.append(System.lineSeparator());
+		};
+
+		append.accept(".class public " + rootScope.getModuleName());
+		append.accept(".super java/lang/Object");
+		append.accept("");
+
+		fieldsCode.forEach(line -> append.accept(line));
+
+		append.accept("");
 
 		if (!staticCode.isEmpty()) {
-			System.out.println(".method static public <clinit>()V");
-			staticCode.forEach(line -> System.out.println("  " + line));
-			System.out.println("  return");
-			System.out.println(".end method");
+			append.accept(".method static public <clinit>()V");
+			staticCode.forEach(line -> append.accept(line));
+			append.accept("return");
+			append.accept(".end method");
 		}
 		functions.forEach(f -> {
-			System.out.println("");
-			f.build().forEach(line -> System.out.println(line));
+			append.accept("");
+			f.build().forEach(line -> append.accept(line));
 		});
 
+		return code.toString();
 	}
 
 	private void appendCode(String text) {
