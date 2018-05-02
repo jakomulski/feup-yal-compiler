@@ -31,10 +31,10 @@ function main() {
 			b = 4;
 		}
 		else{
-			//b = 5; - wll throw undeclared Error
+			b = 5;
 		}
 	}
-	c = b;
+	c = b; //ERROR - b is undeclared
 	while(a>3){
 		a = a+1;
 	}
