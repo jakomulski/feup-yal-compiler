@@ -1,112 +1,110 @@
 package scope;
 
-import java.util.function.Supplier;
-
 public enum VariableDescFactory {
-	INSTANCE;
+    INSTANCE;
 
-	public VariableDesc createLocalVariable(VariableType type, boolean initialized) {
-		return new VariableDescImpl(type, initialized);
-	}
+    public VariableDesc createLocalVariable(VariableType type, boolean initialized) {
+        return new VariableDescImpl(type, initialized);
+    }
 
-	public VariableDesc createField(VariableType type, boolean initialized) {
-		VariableDescImpl varDesc = new VariableDescImpl(type, initialized);
-		varDesc.isField = true;
-		return varDesc;
-	}
+    public VariableDesc createField(VariableType type, boolean initialized) {
+        VariableDescImpl varDesc = new VariableDescImpl(type, initialized);
+        varDesc.isField = true;
+        return varDesc;
+    }
 
-	public VariableDesc createCopy(VariableDesc variableDesc) {
-		return new VariableDescImpl(variableDesc);
-	}
+    public VariableDesc createCopy(VariableDesc variableDesc) {
+        return new VariableDescImpl(variableDesc);
+    }
 
-	class Wrapper<T>{
-		private T obj;
-		Wrapper(T obj){
-			this.obj = obj;
-		}
-		public T get() {
-			return obj;
-		}
-		public void set(T obj) {
-			this.obj = obj;
-		}
-		
-	}
-	
-	class VariableDescImpl implements VariableDesc {
-		
-		
-		private Wrapper<String> name = new Wrapper<>("");
-		
-		private boolean initialized;
-		private VariableType type;
-		private boolean isField = false;
+    class Wrapper<T> {
+        private T obj;
 
-		private String value;
+        Wrapper(T obj) {
+            this.obj = obj;
+        }
 
-		
+        public T get() {
+            return obj;
+        }
 
-		public VariableDescImpl(VariableDesc variableDesc) {
-			name = VariableDescImpl.class.cast(variableDesc).name;
-			type = variableDesc.getType();
-			initialized = variableDesc.isInitialized();
-			value = variableDesc.getValue();
-			isField = variableDesc.isField();
-		}
+        public void set(T obj) {
+            this.obj = obj;
+        }
 
-		public VariableDescImpl(VariableType type, boolean initialized) {
-			this.type = type;
-			this.initialized = initialized;
-		}
+    }
 
-		public VariableDescImpl initialize() {
-			this.initialized = true;
-			return this;
-		}
+    class VariableDescImpl implements VariableDesc {
 
-		public String getValue() {
-			return value;
-		}
+        private Wrapper<String> name = new Wrapper<>("");
 
-		public void setValue(String value) {
-			this.value = value;
-		}
+        private boolean initialized;
+        private VariableType type;
+        private boolean isField = false;
 
-		public boolean isField() {
-			return isField;
-		}
+        private String value;
 
-		public boolean isInitialized() {
-			return initialized;
-		}
+        public VariableDescImpl(VariableDesc variableDesc) {
+            name = VariableDescImpl.class.cast(variableDesc).name;
+            type = variableDesc.getType();
+            initialized = variableDesc.isInitialized();
+            value = variableDesc.getValue();
+            isField = variableDesc.isField();
+        }
 
-		public boolean is(VariableType type) {
-			return this.type.equals(type);
-		}
+        public VariableDescImpl(VariableType type, boolean initialized) {
+            this.type = type;
+            this.initialized = initialized;
+        }
 
-		public VariableType getType() {
-			return type;
-		}
+        public VariableDescImpl initialize() {
+            this.initialized = true;
+            return this;
+        }
 
-		public VariableDescImpl setType(VariableType type) {
-			this.type = type;
-			return this;
-		}
+        public String getValue() {
+            return value;
+        }
 
-		@Override
-		public String toString() {
-			return "VariableDesc [ initialized=" + initialized + ", type=" + type + "]";
-		}
+        public void setValue(String value) {
+            this.value = value;
+        }
 
-		public void setName(String name) {
-			this.name.set(name);
-		}
-		
-		@Override
-		public String getName() {
-			return this.name.get();
-		}
+        public boolean isField() {
+            return isField;
+        }
 
-	}
+        public boolean isInitialized() {
+            return initialized;
+        }
+
+        public boolean is(VariableType type) {
+            return this.type.equals(type);
+        }
+
+        public VariableType getType() {
+            return type;
+        }
+
+        public VariableDescImpl setType(VariableType type) {
+            this.type = type;
+            return this;
+        }
+
+        @Override
+        public String toString() {
+            return "VariableDesc [ initialized=" + initialized + ", type=" + type + "]";
+        }
+
+        public void setName(String name) {
+            this.name.set(name);
+        }
+
+        @Override
+        public String getName() {
+            return this.name.get();
+        }
+
+    }
 
 }

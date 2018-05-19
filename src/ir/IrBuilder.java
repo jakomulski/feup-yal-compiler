@@ -1,24 +1,49 @@
 package ir;
 
-import static yal2jvm.Yal2jvmTreeConstants.*;
+import static yal2jvm.Yal2jvmTreeConstants.JJTARRAY;
 import static yal2jvm.Yal2jvmTreeConstants.JJTARRAYACCESS;
 import static yal2jvm.Yal2jvmTreeConstants.JJTASSIGN;
 import static yal2jvm.Yal2jvmTreeConstants.JJTCALL;
+import static yal2jvm.Yal2jvmTreeConstants.JJTIF;
 import static yal2jvm.Yal2jvmTreeConstants.JJTINTEGER;
 import static yal2jvm.Yal2jvmTreeConstants.JJTMODULEACCESS;
 import static yal2jvm.Yal2jvmTreeConstants.JJTNEGATION;
 import static yal2jvm.Yal2jvmTreeConstants.JJTOPERATOR;
 import static yal2jvm.Yal2jvmTreeConstants.JJTSIZEOF;
+import static yal2jvm.Yal2jvmTreeConstants.JJTSTRING;
 import static yal2jvm.Yal2jvmTreeConstants.JJTVARIABLE;
+import static yal2jvm.Yal2jvmTreeConstants.JJTWHILE;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import custom.StackSizeCounter;
+import operations.ALoad;
+import operations.AReturn;
+import operations.AStore;
+import operations.AddOperation;
+import operations.ArrayLength;
+import operations.BiPush;
+import operations.GetStatic;
+import operations.GoTo;
+import operations.IALoad;
+import operations.IAStore;
+import operations.ILoad;
+import operations.INeg;
+import operations.IReturn;
+import operations.IStore;
+import operations.IfIcmp;
+import operations.InvokeStatic;
+import operations.Label;
+import operations.Ldc;
+import operations.NewArray;
+import operations.Operator;
+import operations.PutStatic;
+import operations.Return;
+import optimization.Optimizer;
 import scope.FunctionDesc;
 import scope.Scope;
 import scope.VariableDesc;
@@ -28,246 +53,253 @@ import yal2jvm.Node;
 import yal2jvm.SimpleNode;
 
 public class IrBuilder {
-	private final StackSizeCounter stackSizeCounter;
+    private final StackSizeCounter stackSizeCounter;
 
-	private final FunctionDesc functionDesc;
-	private final List<Statement> statements = new ArrayList<>();
+    private final FunctionDesc functionDesc;
+    private final List<Statement> statements = new ArrayList<>();
 
-	private final List<VariableDesc> localVariables = new ArrayList<>();
-	private final List<VariableDesc> parameters = new ArrayList<>();
+    private final List<VariableDesc> localVariables = new ArrayList<>();
+    private final List<VariableDesc> parameters = new ArrayList<>();
 
-	public IrBuilder(FunctionDesc desc) {
-		this.functionDesc = desc;
-		stackSizeCounter = new StackSizeCounter();
-	}
+    public IrBuilder(FunctionDesc desc) {
+        this.functionDesc = desc;
+        stackSizeCounter = new StackSizeCounter();
+    }
 
-	public void addVariable(VariableDesc desc) {
-		localVariables.add(desc);
-	}
+    public List<String> build(Optimizer optimizer) {
+        statements.forEach(statement -> {
+            generateStatement(statement);
+            statement.optimize();
+        });
 
-	public void addParameter(VariableDesc desc) {
-		parameters.add(desc);
-	}
+        optimizer.optimize(statements);
 
-	public void addReturnValue(VariableDesc desc) {
-		parameters.add(desc);
-		Statement statement = new Statement(new SimpleNode(-1), null);
-		statements.add(statement);
-		if (desc.getType().equals(VariableType.NULL))
-			statement.returnn();
-		else {
-			statement.iload(desc);
-			statement.ireturn();
-		}
-	}
+        registerAlocation();
+        List<Supplier<String>> lines = new ArrayList<>();
+        generate(lines);
+        return lines.stream().map(s -> s.get()).collect(Collectors.toList());
+    }
 
-	public Statement addStatement(SimpleNode node, Scope scope) {
-		Statement statement = new Statement(node, scope);
-		statement.setRef(statement);
-		statement.setStackSizeCounter(stackSizeCounter);
-		statements.add(statement);
-		return statement;
-	}
+    private void generate(List<Supplier<String>> supLines) {
+        supLines.add(() -> ".method public static " + functionDesc.asJasmin());
+        int numberOfLocals = parameters.size() + localVariables.size();
+        // supLines.add(() -> ".limit locals " + parameters.stream().map(p ->
+        // p.getName()).collect(Collectors.toList())
+        // + " " + localVariables.stream().map(p ->
+        // p.getName()).collect(Collectors.toList()));
+        supLines.add(() -> ".limit locals " + Integer.toString(numberOfLocals));
+        supLines.add(() -> ".limit stack " + stackSizeCounter.getStackSize());
+        statements.forEach(statement -> {
+            supLines.add(() -> statement.toString());
+            supLines.add(() -> "");
+            statement.calculateStackSize(stackSizeCounter);
+        });
+        supLines.add(() -> ".end method");
+    }
 
-	public void addGoToStatement(Statement statement) {
-		statement.append(() -> "goto " + statement.getRef().getName());
-		statements.add(statement);
-	}
+    private void registerAlocation() {
+        AtomicInteger counter = new AtomicInteger(0); // dummy alocation
+        parameters.forEach(p -> p.setName(Integer.toString(counter.getAndIncrement())));
+        localVariables.forEach(p -> p.setName(Integer.toString(counter.getAndIncrement())));
+    }
 
-	public Statement addLabelStatement(Statement statement) {
-		statement.append(() -> statement.getName() + ":");
-		statements.add(statement);
-		return statement;
-	}
+    public void addVariable(VariableDesc desc) {
+        localVariables.add(desc);
+    }
 
-	public List<String> build() {
-		registerAlocation();
+    public void addParameter(VariableDesc desc) {
+        parameters.add(desc);
+    }
 
-		List<String> lines = new ArrayList<>();
-		generate(lines);
-		return lines;
-	}
+    public void addReturnValue(VariableDesc desc) {
+        Statement statement = new Statement();
+        statements.add(statement);
+        if (desc.getType().equals(VariableType.NULL))
+            statement.add(new Return());
+        else if (desc.is(VariableType.ARRAY)) {
+            statement.add(new AReturn()).add(new ALoad(desc));
+            parameters.add(desc);
+        } else {
+            statement.add(new IReturn()).add(new ILoad(desc));
+            parameters.add(desc);
+        }
+    }
 
-	private void registerAlocation() {
-		AtomicInteger counter = new AtomicInteger(0); // dummy alocation
-		parameters.forEach(p -> p.setName(Integer.toString(counter.getAndIncrement())));
-		localVariables.forEach(p -> p.setName(Integer.toString(counter.getAndIncrement())));
-	}
+    public Statement addStatement(SimpleNode node, Scope scope) {
+        Statement statement = new Statement(node, scope, stackSizeCounter);
+        statement.setRef(statement);
+        statements.add(statement);
+        return statement;
+    }
 
-	private void generate(List<String> lines) {
-		List<Supplier<String>> supLines = new ArrayList<>();
-		
-		supLines.add(()->".method public static " + functionDesc.asJasmin());
-		int numberOfLocals = parameters.size() + localVariables.size();
-		supLines.add(()->".limit locals " + Integer.toString(numberOfLocals));
-		supLines.add(()->".limit stack "+stackSizeCounter.getStackSize());
-		statements.forEach(statement -> {
-			generateStatement(statement, statement.getNode());
-			supLines.addAll(statement.getValue());
-			supLines.add(()->"");
-		});
-		supLines.add(()->".end method");
-		
-		lines.addAll(supLines.stream().map(l->l.get()).collect(Collectors.toList()));
-	}
+    public void addGoToStatement(Statement statement) {
+        statement.add(new GoTo(statement.getRef()));
+        statements.add(statement);
+    }
 
-	private void generateStatement(Statement statement, SimpleNode node) {
-		if (node.is(-1))
-			return;
+    public Statement addLabelStatement(Statement statement) {
+        statement.add(new Label(statement));
+        statements.add(statement);
+        return statement;
+    }
 
-		if (node.is(JJTCALL)) {
-			generateCall(statement, node);
-			// TODO: pop from stack if not void
-		} else if (node.is(JJTASSIGN))
-			generateAssign(statement, node);
-		else if (node.is(JJTWHILE))
-			generateLoop(statement, node);
-		else if (node.is(JJTIF))
-			generateIf(statement, node);
+    private void generateStatement(Statement statement) {
+        SimpleNode node = statement.getNode();
 
-	}
+        if (node.is(-1))
+            return;
 
-	private void generateLoop(Statement statement, SimpleNode node) {
-		SimpleNode conditionNode = node.jjtGetChild(0);
-		String condition = conditionNode.getTokenValue();
-		generateRHS(statement, conditionNode.jjtGetChild(0));
-		generateRHS(statement, conditionNode.jjtGetChild(1));
-		statement.ificmp(condition);
-	}
+        if (node.is(JJTCALL)) {
+            generateCall(statement.scope, node, statement);
+            // TODO: pop from stack if not void
+        } else if (node.is(JJTASSIGN))
+            generateAssign(statement.scope, node, statement);
+        else if (node.is(JJTWHILE))
+            generateLoop(statement.scope, node, statement);
+        else if (node.is(JJTIF))
+            generateIf(statement.scope, node, statement);
 
-	private void generateIf(Statement statement, SimpleNode node) {
-		SimpleNode conditionNode = node.jjtGetChild(0);
-		String condition = conditionNode.getTokenValue();
-		generateRHS(statement, conditionNode.jjtGetChild(0));
-		generateRHS(statement, conditionNode.jjtGetChild(1));
-		statement.ificmp(condition);
-	}
+    }
 
-	private void generateAssign(Statement statement, SimpleNode node) {
-		SimpleNode var = node.jjtGetChild(0);
+    private void generateLoop(Scope scope, SimpleNode node, AddOperation addOperation) {
+        SimpleNode conditionNode = node.jjtGetChild(0);
+        String condition = conditionNode.getTokenValue();
+        addOperation = addOperation.add(new IfIcmp(condition));
+        generateRHS(scope, conditionNode.jjtGetChild(0), addOperation);
+        generateRHS(scope, conditionNode.jjtGetChild(1), addOperation);
+    }
 
-		if (var.is(JJTARRAYACCESS)) {
-			String name = var.getTokenValue();
-			String index = var.jjtGetChild(0).getTokenValue();
-			statement.aload(statement.scope.getVariable(name));
-			if (Common.isInt(index))
-				statement.bipush(index);
-			else
-				statement.iload(statement.scope.getVariable(index));
+    private void generateIf(Scope scope, SimpleNode node, AddOperation addOperation) {
+        SimpleNode conditionNode = node.jjtGetChild(0);
+        String condition = conditionNode.getTokenValue();
+        addOperation = addOperation.add(new IfIcmp(condition));
+        generateRHS(scope, conditionNode.jjtGetChild(0), addOperation);
+        generateRHS(scope, conditionNode.jjtGetChild(1), addOperation);
+    }
 
-			generateRHS(statement, (SimpleNode) node.jjtGetChild(1));
-			statement.iastore();
-			return;
-		}
+    private void generateAssign(Scope scope, SimpleNode node, Statement statement) {
+        SimpleNode var = node.jjtGetChild(0);
+        String varName = var.getTokenValue();
+        if (var.is(JJTARRAYACCESS)) {
+            String index = var.jjtGetChild(0).getTokenValue();
+            AddOperation addOperation = statement.add(new IAStore());
+            addOperation.add(new ALoad(scope.getVariable(varName)));
+            if (Common.isInt(index))
+                addOperation.add(new BiPush(index));
+            else
+                addOperation.add(new ILoad(scope.getVariable(index)));
+            generateRHS(scope, node.jjtGetChild(1), addOperation);
+        } else {
+            VariableDesc varDesc = scope.getVariable(varName);
+            if (varDesc.isField()) {
+                generateRHS(scope, node.jjtGetChild(1), statement.add(new PutStatic(scope.getModuleName(), varDesc)));
+            } else if (varDesc.is(VariableType.SCALAR) || varDesc.is(VariableType.ANY)) {
+                generateRHS(scope, node.jjtGetChild(1), statement.add(new IStore(varDesc)));
+            } else if (varDesc.is(VariableType.ARRAY))
+                generateRHS(scope, node.jjtGetChild(1), statement.add(new AStore(varDesc)));
+            statement.setType(varDesc);
+        }
+    }
 
-		generateRHS(statement, (SimpleNode) node.jjtGetChild(1));
+    private void generateRHS(Scope scope, SimpleNode assignment, AddOperation addOperation) {
+        if (assignment.is(JJTVARIABLE)) {
+            String name = assignment.getTokenValue();
+            VariableDesc varDesc = scope.getVariable(name);
 
-		String varName = var.getTokenValue();
-		VariableDesc varDesc = statement.scope.getVariable(varName);
+            if (varDesc.isField()) {
+                addOperation.add(new GetStatic(scope.getModuleName(), varDesc));
+            } else if (varDesc.is(VariableType.SCALAR)) {
+                addOperation.add(new ILoad(varDesc));
+            } else {
+                addOperation.add(new ALoad(scope.getVariable(assignment.getTokenValue())));
+            }
+        } else if (assignment.is(JJTARRAY)) {
+            generateRHS(scope, assignment.jjtGetChild(0), addOperation.add(new NewArray()));
+        } else if (assignment.is(JJTINTEGER)) {
+            addOperation.add(new BiPush(assignment.getTokenValue()));
+        } else if (assignment.is(JJTOPERATOR)) {
+            addOperation = addOperation.add(new Operator(assignment.getTokenValue()));
+            generateRHS(scope, assignment.jjtGetChild(0), addOperation);
+            generateRHS(scope, assignment.jjtGetChild(1), addOperation);
+        } else if (assignment.is(JJTNEGATION)) {
+            generateRHS(scope, assignment.jjtGetChild(0), addOperation.add(new INeg()));
+        } else if (assignment.is(JJTCALL)) {
+            generateCall(scope, assignment, addOperation);
+        } else if (assignment.is(JJTSIZEOF)) {
+            addOperation.add(new ArrayLength())
+                    .add(new ALoad(scope.getVariable(assignment.jjtGetChild(0).getTokenValue())));
+        } else if (assignment.is(JJTARRAYACCESS)) {
+            String name = assignment.getTokenValue();
+            String index = assignment.jjtGetChild(0).getTokenValue();
+            addOperation = addOperation.add(new IALoad());
 
-		if (varDesc.isField())
-			statement.putstatic(varDesc);
-		else if (varDesc.is(VariableType.SCALAR))
-			statement.istore(varDesc);
-		else if (varDesc.is(VariableType.ANY)) // functions by default return
-												// scalar
-			statement.istore(varDesc);
-		else if (varDesc.is(VariableType.ARRAY))
-			statement.astore(varDesc);
+            VariableDesc arrayDesc = scope.getVariable(name);
+            if (arrayDesc.isField())
+                addOperation.add(new GetStatic(scope.getModuleName(), arrayDesc));
+            else
+                addOperation.add(new ALoad(arrayDesc));
 
-		statement.setType(varDesc);
+            if (Common.isInt(index))
+                addOperation.add(new BiPush(index));
+            else {
+                VariableDesc varDesc = scope.getVariable(index);
+                if (varDesc.isField()) {
+                    addOperation.add(new GetStatic(scope.getModuleName(), varDesc));
+                } else
+                    addOperation.add(new ILoad(varDesc));
+            }
 
-	}
+        } else if (assignment.is(JJTSTRING)) {
+            addOperation.add(new Ldc(assignment.getTokenValue()));
+        }
+    }
 
-	private void generateRHS(Statement statement, SimpleNode assignment) {
-		if (assignment.is(JJTARRAY)) {
-			generateRHS(statement, assignment.jjtGetChild(0));
-			statement.newarray();
-		} else if (assignment.is(JJTVARIABLE)) {
-			String name = assignment.getTokenValue();
-			if (statement.scope.getVariable(name).is(VariableType.SCALAR))
-				statement.iload(statement.scope.getVariable(assignment.getTokenValue()));
-			else {
-				statement.aload(statement.scope.getVariable(assignment.getTokenValue()));
-			}
-		} else if (assignment.is(JJTINTEGER)) {
-			statement.bipush(assignment.getTokenValue());
-		} else if (assignment.is(JJTOPERATOR)) {
-			generateRHS(statement, assignment.jjtGetChild(0));
-			generateRHS(statement, assignment.jjtGetChild(1));
-			statement.operator(assignment.getTokenValue());
-		} else if (assignment.is(JJTNEGATION)) {
-			generateRHS(statement, assignment.jjtGetChild(0));
-			statement.ineg();
-		} else if (assignment.is(JJTCALL)) {
-			generateCall(statement, assignment);
-		} else if (assignment.is(JJTSIZEOF)) {
-			statement.aload(statement.scope.getVariable(assignment.jjtGetChild(0).getTokenValue())); // Sizeof
-			// ->
-			// Variable
-			statement.arraylength();
-		} else if (assignment.is(JJTARRAYACCESS)) {
-			String name = assignment.getTokenValue();
-			String index = assignment.jjtGetChild(0).getTokenValue();
-			statement.aload(statement.scope.getVariable(name));
-			if (Common.isInt(index))
-				statement.bipush(index);
-			else
-				statement.iload(statement.scope.getVariable(index));
-			statement.iaload();
-		} else if (assignment.is(JJTMODULEACCESS)) {
-			// IMPOSSIBLE
-		} else if (assignment.is(JJTSTRING)) {
-			statement.ldc(assignment.getTokenValue());
-		}
-	}
+    private void loadArguments(Scope sope, SimpleNode node, AddOperation addOperation) {
+        if (node.jjtGetNumChildren() > 0)
+            for (Node n : node.getChildren()) {
+                generateRHS(sope, (SimpleNode) n, addOperation);
+            }
+    }
 
-	private void loadArguments(Statement statement, SimpleNode node) {
-		if (node.jjtGetNumChildren() > 0)
-			for (Node n : node.getChildren()) {
-				generateRHS(statement, (SimpleNode) n);
-			}
-	}
+    private void generateCall(Scope scope, SimpleNode node, AddOperation addOperation) {
+        if (node.jjtGetChild(0).is(JJTMODULEACCESS)) {
+            generateModuleCall(scope, node, addOperation);
+            return;
+        }
+        String name = node.jjtGetChild(0).getTokenValue();
+        FunctionDesc fnDesc = scope.getFunction(name);
+        loadArguments(scope, node.jjtGetChild(1), addOperation.add(new InvokeStatic(scope.getModuleName(), fnDesc)));
+    }
 
-	private void generateModuleCall(Statement statement, SimpleNode node) {
-		SimpleNode moduleAccessNode = node.jjtGetChild(0);
-		String module = moduleAccessNode.getTokenValue();
-		String name = moduleAccessNode.jjtGetChild(0).getTokenValue();
+    private void generateModuleCall(Scope scope, SimpleNode node, AddOperation addOperation) {
+        SimpleNode moduleAccessNode = node.jjtGetChild(0);
+        String module = moduleAccessNode.getTokenValue();
+        String name = moduleAccessNode.jjtGetChild(0).getTokenValue();
 
-		List<String> args = new ArrayList<>();
+        List<String> args = new ArrayList<>();
 
-		SimpleNode argsNode = node.jjtGetChild(1);
-		if (argsNode.jjtGetNumChildren() > 0)
-			for (Node n : argsNode.getChildren()) {
-				generateRHS(statement, (SimpleNode) n);
-				args.add(parseArg(statement, (SimpleNode) n));
-			}
+        addOperation = addOperation.add(new InvokeStatic(module, name, args));
 
-		statement.invokestatic(module, name, args);
-	}
+        SimpleNode argsNode = node.jjtGetChild(1);
+        if (argsNode.jjtGetNumChildren() > 0)
+            for (Node n : argsNode.getChildren()) {
+                generateRHS(scope, (SimpleNode) n, addOperation);
+                args.add(parseArg(scope, (SimpleNode) n));
+            }
 
-	private String parseArg(Statement statement, SimpleNode node) {
-		if (node.is(JJTSTRING))
-			return "Ljava/lang/String;";
-		if (node.is(JJTVARIABLE)) {
-			String name = node.getTokenValue();
-			if (statement.scope.getVariable(name).is(VariableType.SCALAR))
-				return "I";
-			return "[I";
-		}
-		if (node.is(JJTINTEGER))
-			return "I";
-		return "";
-	}
+    }
 
-	private void generateCall(Statement statement, SimpleNode node) {
-		if (node.jjtGetChild(0).is(JJTMODULEACCESS)) {
-			generateModuleCall(statement, node);
-			return;
-		}
-		loadArguments(statement, node.jjtGetChild(1));
-		String name = node.jjtGetChild(0).getTokenValue();
-		statement.invokestatic(name);
-
-	}
+    private String parseArg(Scope scope, SimpleNode node) {
+        if (node.is(JJTSTRING))
+            return "Ljava/lang/String;";
+        if (node.is(JJTVARIABLE)) {
+            String name = node.getTokenValue();
+            if (scope.getVariable(name).is(VariableType.SCALAR))
+                return "I";
+            return "[I";
+        }
+        if (node.is(JJTINTEGER))
+            return "I";
+        return "";
+    }
 }

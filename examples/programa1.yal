@@ -3,7 +3,8 @@ module programa1 {
 	data=[100]; // vector of 100 integers
 	mx; // attribute mx
 	mn; // attribute mn
-
+	data = 1;
+	
 function det(d[]) {
 	i=0;
 	M=d.size-1;
@@ -16,9 +17,13 @@ function det(d[]) {
 	}
 }
 
+function a[]=asd(){
+	a = [1];
+}
+
 function main() {
 	det(data);
-
+	data = asd();
 	io.println("max: ",mx); 
 	io.println("min: ",mn);
 }
