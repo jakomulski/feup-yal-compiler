@@ -14,7 +14,16 @@
 	- loops
 	- arrays
 	- stack size calculation
-	
+
+## Third checkpoint ##
+- semantic analysis
+	- fixes
+- code generation
+	- fixes
+
+## Usage ##
+![Example](images/example.png)
+
 ## Examples ###
  
 Semantic analysis
