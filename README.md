@@ -15,6 +15,9 @@
 	- arrays
 	- stack size calculation
 	
+## Usage ##
+![Example](images/example.png)
+
 ## Examples ###
  
 Semantic analysis
