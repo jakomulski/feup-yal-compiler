@@ -3,6 +3,7 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 
 import custom.Logger;
+import custom.NameGenerator;
 import ir.CodeBuilder;
 import semantic.Common;
 import semantic.ModuleAnalyzer;
@@ -14,7 +15,7 @@ public class Main {
     public final Logger LOGGER = Logger.getInstance();
 
     public static void main(String[] args) throws ParseException, FileNotFoundException {
-        // String input = "./new_examples_test/call-main.yal";
+        String input = "./examples/programa2.yal";
         // String input = args[0];
 
         Main main = new Main();
@@ -25,13 +26,14 @@ public class Main {
                 System.out.println("Reading: " + arg);
                 new Main().run(arg);
                 Logger.reset();
+                NameGenerator.reset();
                 System.out.println("");
             } catch (Exception e) {
-                e.printStackTrace();
+                System.out.println("");
             }
         }
 
-        // main.run(input);
+        main.run(input);
     }
 
     private boolean dump = false;

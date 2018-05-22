@@ -24,7 +24,7 @@ public class ALoad extends Operation {
 
     @Override
     public String toString() {
-        return "aload_" + desc.getName();
+        return "aload " + desc.getName();
     }
 
     @Override

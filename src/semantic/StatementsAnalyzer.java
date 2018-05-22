@@ -209,8 +209,9 @@ public class StatementsAnalyzer {
 
                 LOGGER.semanticInfo(assignment, "load " + size);
             } else if (nameNode.is(JJTSIZEOF)) {
-                if (Common.checkSizeOf(nameNode, scope))
+                if (Common.checkSizeOf(nameNode, scope)) {
                     desc.initialize();
+                }
             } else {
                 String varName = nameNode.getTokenValue();
                 if (!scope.hasVariable(varName)) {
@@ -220,7 +221,6 @@ public class StatementsAnalyzer {
                     LOGGER.semanticError(assignment, "incorrect type");
                     return;
                 } else {
-                    VariableDesc varDesc = scope.getVariable(varName);
                     desc.setType(VariableType.ARRAY);
                     desc.initialize();
                     LOGGER.semanticInfo(assignment, "load " + varName);
@@ -281,7 +281,9 @@ public class StatementsAnalyzer {
             LOGGER.semanticInfo(assignment, "negation");
             checkRhs(assignment.jjtGetChild(0), scope, desc);
         } else if (assignment.is(JJTSIZEOF)) {
-            checkSizeOf(assignment, scope);
+            if (checkSizeOf(assignment, scope)) {
+                desc.setType(VariableType.SCALAR);
+            }
         } else if (assignment.is(JJTARRAYACCESS)) {
             if (desc.is(VariableType.ANY))
                 desc.setType(VariableType.SCALAR);
