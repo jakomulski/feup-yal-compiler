@@ -1,0 +1,28 @@
+CHECKPOINT 2 FEEDBACK
+=====================
+Class 3 - Group 34
+
+These notes are based on an analysis of commit 6ccb14c15591b6d1073eeb73f6af96744bc35f85.
+If you believe this is an error, contact your class teacher.
+=====================
+
+High-priority:
+	- Empty modules ("module a {}") result in a NullPointerException.
+	- Arithmetic expressions on arrays should cause a semantic error (e.g., "module a {
+function f() { y = [1]; y = y + y; } }").
+	- Missing function result validation ("y = f();" where f is void).
+	- Incorrect values for ".limit stack" for functions with a single function call with
+no arguments ("y = a.g();" results in ".limit stack 0", but at least one stack slot is
+necessary for the result of g).
+	- When reading from global variables, "getstatic" should be used instead of "iload".
+Global variable writes correctly use "putstatic".
+	- Similarly, when writing/reading local variables, "iload varname" should not be used.
+Instead, the code should assign a variable number to the return variable, as it does to all
+others.
+	- In 'y = [1]; y = a.g(1, 2, "test");', the compiler prints an error (incorrect type
+ARRAY ANY), but this code is valid (the result of "a.g" is an array of integers).
+	- Due to the semantics of Java, the main function should have an implicit String[]
+argument, even though the value of this argument is inacessible from yal.
+
+Low-priority:
+	- "Missing funtion" should be "Missing function".
