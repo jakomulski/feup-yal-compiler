@@ -19,7 +19,7 @@ public class AStore extends Operation {
 
     @Override
     public String toString() {
-        return "astore " + desc.getName();
+        return "astore_" + desc.getName();
     }
 
     @Override

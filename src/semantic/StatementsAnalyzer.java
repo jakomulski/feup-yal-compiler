@@ -29,7 +29,7 @@ import yal2jvm.Node;
 import yal2jvm.SimpleNode;
 
 public class StatementsAnalyzer {
-    private final Logger LOGGER = Logger.INSTANCE;
+    private final Logger LOGGER = Logger.getInstance();
     private final IrBuilder irBuilder;
 
     public StatementsAnalyzer(IrBuilder irBuilder) {
@@ -256,12 +256,15 @@ public class StatementsAnalyzer {
             } else if (desc.is(VariableType.SCALAR) && scope.getVariable(name).is(VariableType.ARRAY)) {
                 LOGGER.semanticError(assignment, "incorrect type " + name);
                 return;
+            } else if (desc.is(VariableType.ARRAY) && scope.getVariable(name).is(VariableType.SCALAR)) {
+                desc.fill();
+                return;
             } else if (desc.is(VariableType.ANY)) {
                 desc.setType(scope.getVariable(name).getType());
             }
             LOGGER.semanticInfo(assignment, "load " + name);
         } else if (desc.is(VariableType.ARRAY)) {
-            LOGGER.semanticError(assignment, "incorrect type");
+            desc.fill();
         } else if (assignment.is(JJTINTEGER)) {
             if (desc.is(VariableType.ANY))
                 desc.setType(VariableType.SCALAR);

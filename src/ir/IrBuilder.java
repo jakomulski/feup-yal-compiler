@@ -26,13 +26,14 @@ import operations.AReturn;
 import operations.AStore;
 import operations.AddOperation;
 import operations.ArrayLength;
-import operations.BiPush;
+import operations.FillArray;
 import operations.GetStatic;
 import operations.GoTo;
 import operations.IALoad;
 import operations.IAStore;
 import operations.ILoad;
 import operations.INeg;
+import operations.IPush;
 import operations.IReturn;
 import operations.IStore;
 import operations.IfIcmp;
@@ -66,6 +67,10 @@ public class IrBuilder {
         stackSizeCounter = new StackSizeCounter();
     }
 
+    public FunctionDesc getDescription() {
+        return functionDesc;
+    }
+
     public List<String> build(Optimizer optimizer) {
         statements.forEach(statement -> {
             generateStatement(statement);
@@ -83,6 +88,7 @@ public class IrBuilder {
     private void generate(List<Supplier<String>> supLines) {
         supLines.add(() -> ".method public static " + functionDesc.asJasmin());
         int numberOfLocals = parameters.size() + localVariables.size();
+
         // supLines.add(() -> ".limit locals " + parameters.stream().map(p ->
         // p.getName()).collect(Collectors.toList())
         // + " " + localVariables.stream().map(p ->
@@ -91,7 +97,6 @@ public class IrBuilder {
         supLines.add(() -> ".limit stack " + stackSizeCounter.getStackSize());
         statements.forEach(statement -> {
             supLines.add(() -> statement.toString());
-            supLines.add(() -> "");
             statement.calculateStackSize(stackSizeCounter);
         });
         supLines.add(() -> ".end method");
@@ -185,18 +190,23 @@ public class IrBuilder {
             AddOperation addOperation = statement.add(new IAStore());
             addOperation.add(new ALoad(scope.getVariable(varName)));
             if (Common.isInt(index))
-                addOperation.add(new BiPush(index));
+                addOperation.add(new IPush(index));
             else
                 addOperation.add(new ILoad(scope.getVariable(index)));
             generateRHS(scope, node.jjtGetChild(1), addOperation);
         } else {
             VariableDesc varDesc = scope.getVariable(varName);
-            if (varDesc.isField()) {
+            if (varDesc.isFill()) {
+                AddOperation addOp = statement.add(new FillArray(varDesc));
+                addOp.add(new GetStatic(scope.getModuleName(), varDesc));
+                generateRHS(scope, node.jjtGetChild(1), addOp);
+            } else if (varDesc.isField()) {
                 generateRHS(scope, node.jjtGetChild(1), statement.add(new PutStatic(scope.getModuleName(), varDesc)));
             } else if (varDesc.is(VariableType.SCALAR) || varDesc.is(VariableType.ANY)) {
                 generateRHS(scope, node.jjtGetChild(1), statement.add(new IStore(varDesc)));
-            } else if (varDesc.is(VariableType.ARRAY))
+            } else if (varDesc.is(VariableType.ARRAY)) {
                 generateRHS(scope, node.jjtGetChild(1), statement.add(new AStore(varDesc)));
+            }
             statement.setType(varDesc);
         }
     }
@@ -216,7 +226,7 @@ public class IrBuilder {
         } else if (assignment.is(JJTARRAY)) {
             generateRHS(scope, assignment.jjtGetChild(0), addOperation.add(new NewArray()));
         } else if (assignment.is(JJTINTEGER)) {
-            addOperation.add(new BiPush(assignment.getTokenValue()));
+            addOperation.add(new IPush(assignment.getTokenValue()));
         } else if (assignment.is(JJTOPERATOR)) {
             addOperation = addOperation.add(new Operator(assignment.getTokenValue()));
             generateRHS(scope, assignment.jjtGetChild(0), addOperation);
@@ -240,7 +250,7 @@ public class IrBuilder {
                 addOperation.add(new ALoad(arrayDesc));
 
             if (Common.isInt(index))
-                addOperation.add(new BiPush(index));
+                addOperation.add(new IPush(index));
             else {
                 VariableDesc varDesc = scope.getVariable(index);
                 if (varDesc.isField()) {

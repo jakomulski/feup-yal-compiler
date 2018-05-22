@@ -18,15 +18,15 @@ public class Operator extends Operation {
         Class<?> firstClazz = firstChild.getOperation().getClass();
         Class<?> secondClazz = secondChild.getOperation().getClass();
 
-        if (firstClazz.equals(BiPush.class) && secondClazz.equals(BiPush.class)) {
+        if (firstClazz.equals(IPush.class) && secondClazz.equals(IPush.class)) {
             optimizeBiPushBiPush(firstChild, secondChild);
         }
 
     }
 
     private void optimizeBiPushBiPush(LowIrNode firstChild, LowIrNode secondChild) {
-        Integer firstNum = Integer.valueOf(BiPush.class.cast(firstChild.getOperation()).value);
-        Integer secondNum = Integer.valueOf(BiPush.class.cast(secondChild.getOperation()).value);
+        Integer firstNum = Integer.valueOf(IPush.class.cast(firstChild.getOperation()).value);
+        Integer secondNum = Integer.valueOf(IPush.class.cast(secondChild.getOperation()).value);
         container.clearChildren();
 
         int num = 0;
@@ -62,7 +62,7 @@ public class Operator extends Operation {
             num = firstNum ^ secondNum;
             break;
         }
-        container.setOperation(new BiPush(String.valueOf(num)));
+        container.setOperation(new IPush(String.valueOf(num)));
     }
 
     @Override

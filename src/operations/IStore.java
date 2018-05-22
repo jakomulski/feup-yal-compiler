@@ -12,8 +12,7 @@ public class IStore extends Operation {
     }
 
     private boolean isNumberNode(Operation op) {
-        return BiPush.class.equals(op.getClass()) || IConst.class.equals(op.getClass())
-                || IConstM1.class.equals(op.getClass());
+        return IPush.class.equals(op.getClass());
     }
 
     @Override
@@ -67,11 +66,7 @@ public class IStore extends Operation {
     }
 
     private String getNumNodeValue(Operation operation) {
-        if (operation.getClass().equals(BiPush.class))
-            return BiPush.class.cast(operation).value;
-        else if (operation.getClass().equals(IConst.class))
-            return IConst.class.cast(operation).value;
-        return "-1";
+        return IPush.class.cast(operation).value;
     }
 
     @Override

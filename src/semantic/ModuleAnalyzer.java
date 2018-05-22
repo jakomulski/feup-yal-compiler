@@ -25,7 +25,7 @@ import yal2jvm.Node;
 import yal2jvm.SimpleNode;
 
 public class ModuleAnalyzer {
-    private final Logger LOGGER = Logger.INSTANCE;
+    private final Logger LOGGER = Logger.getInstance();
     private final SimpleNode module;
     private final ModuleScope rootScope;
     private final CodeBuilder codeBuilder;
@@ -79,14 +79,14 @@ public class ModuleAnalyzer {
         name = node.jjtGetChild(0).getTokenValue();
         node = node.jjtGetChild(1);
         if (node.is(JJTINTEGER)) {
+            String value = node.getTokenValue();
             if (rootScope.hasVariable(name)) {
                 if (rootScope.getVariable(name).is(VariableType.ARRAY)) {
-                    // TODO
+                    codeBuilder.addArrayFill(name, value);
                     return;
                 }
             }
             desc = VariableDescFactory.INSTANCE.createField(VariableType.SCALAR, true);
-            String value = node.getTokenValue();
             desc.setValue(value);
             codeBuilder.addScalarInitialization(name, value);
             rootScope.addVariable(name, desc);

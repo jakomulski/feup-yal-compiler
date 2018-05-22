@@ -1,5 +1,5 @@
 package scope;
 
 public enum VariableType {
-    SCALAR, ARRAY, NULL, ANY
+    SCALAR, ARRAY, NULL, ANY, FILL
 }

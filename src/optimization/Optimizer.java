@@ -81,8 +81,9 @@ public class Optimizer {
             }
         } while (continueLoop);
 
-        visitors.forEach(
-                v -> System.out.println(v.num + ": " + printVarDescList(v.in) + " " + printVarDescList(v.out)));
+        // visitors.forEach(
+        // v -> System.out.println(v.num + ": " + printVarDescList(v.in) + " " +
+        // printVarDescList(v.out)));
 
     }
 
@@ -91,7 +92,8 @@ public class Optimizer {
         visitor.in = visitor.computeIn();
         visitor.out = visitor.computeOut();
 
-        System.out.println(visitor.num + ": " + printVarDescList(visitor.in) + " " + printVarDescList(visitor.out));
+        // System.out.println(visitor.num + ": " + printVarDescList(visitor.in)
+        // + " " + printVarDescList(visitor.out));
 
         if (counter.incrementAndGet() == 100)
             return;

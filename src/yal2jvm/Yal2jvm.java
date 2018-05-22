@@ -3,7 +3,7 @@ package yal2jvm;
 import custom.Logger;
 
 public class Yal2jvm/*@bgen(jjtree)*/implements Yal2jvmTreeConstants, Yal2jvmConstants {/*@bgen(jjtree)*/
-  protected JJTYal2jvmState jjtree = new JJTYal2jvmState();static final Logger LOGGER = Logger.INSTANCE;
+  protected JJTYal2jvmState jjtree = new JJTYal2jvmState();static final Logger LOGGER = Logger.getInstance();
   private void jjtreeOpenNodeScope(Node n)
   {
     ((SimpleNode)n).setLineNumber(getToken(1).beginLine);

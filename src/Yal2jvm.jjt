@@ -14,7 +14,7 @@ import custom.Logger;
 
 public class Yal2jvm
 {
-  static final Logger LOGGER = Logger.INSTANCE;
+  static final Logger LOGGER = Logger.getInstance();
   private void jjtreeOpenNodeScope(Node n)
   {
     ((SimpleNode)n).setLineNumber(getToken(1).beginLine);

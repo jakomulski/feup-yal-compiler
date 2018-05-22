@@ -42,14 +42,6 @@ public class FunctionDesc {
         return name;
     }
 
-    public String asJasminVoid() {
-        StringBuilder builder = new StringBuilder(name + "(");
-        this.arumentsTypes.forEach(t -> builder.append(typeAsJasmin(t)));
-        builder.append(")V");
-
-        return builder.toString();
-    }
-
     public String asJasmin() {
         StringBuilder builder = new StringBuilder(name + "(");
         this.arumentsTypes.forEach(t -> builder.append(typeAsJasmin(t)));
@@ -60,6 +52,10 @@ public class FunctionDesc {
         else
             builder.append(typeAsJasmin(returnType));
         return builder.toString();
+    }
+
+    public boolean isMain() {
+        return this.returnType.equals(VariableType.NULL) && name.equals("main") && this.arumentsTypes.isEmpty();
     }
 
     public String typeAsJasmin(VariableType type) {

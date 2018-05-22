@@ -5,14 +5,14 @@ public enum NameGenerator {
     int counter = 0;
 
     public String getName() {
-        return "" + counter++;
+        return "L" + counter++;
     }
 
     public String getLoopName() {
-        return "" + counter++;
+        return "L" + counter++;
     }
 
     public String getIfName() {
-        return "" + counter++;
+        return "L" + counter++;
     }
 }

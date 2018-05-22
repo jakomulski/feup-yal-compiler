@@ -41,7 +41,7 @@ public enum VariableDescFactory {
         private boolean initialized;
         private VariableType type;
         private boolean isField = false;
-
+        private boolean fill = false;
         private String value;
 
         public VariableDescImpl(VariableDesc variableDesc) {
@@ -103,6 +103,16 @@ public enum VariableDescFactory {
         @Override
         public String getName() {
             return this.name.get();
+        }
+
+        @Override
+        public void fill() {
+            fill = true;
+        }
+
+        @Override
+        public boolean isFill() {
+            return fill;
         }
 
     }

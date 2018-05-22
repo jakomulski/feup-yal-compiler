@@ -1,47 +1,73 @@
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 
 import custom.Logger;
 import ir.CodeBuilder;
+import semantic.Common;
 import semantic.ModuleAnalyzer;
 import yal2jvm.ParseException;
 import yal2jvm.SimpleNode;
 import yal2jvm.Yal2jvm;
 
 public class Main {
-    public static final Logger LOGGER = Logger.INSTANCE;
+    public final Logger LOGGER = Logger.getInstance();
 
     public static void main(String[] args) throws ParseException, FileNotFoundException {
-        String input = "./examples/programa1.yal";
+        // String input = "./new_examples_test/call-main.yal";
         // String input = args[0];
+
+        Main main = new Main();
+        main.printCode = false;
+
+        for (String arg : args) {
+            try {
+                System.out.println("Reading: " + arg);
+                new Main().run(arg);
+                Logger.reset();
+                System.out.println("");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        // main.run(input);
+    }
+
+    private boolean dump = false;
+    private boolean printCode = false;
+
+    public void run(String input) throws FileNotFoundException, ParseException {
         SimpleNode module = new Yal2jvm(new java.io.FileInputStream(input)).Start();
 
-        // Common.dump("", module);
+        if (dump)
+            Common.dump("", module);
+
         if (LOGGER.haveSyntacticErrors())
             return;
         CodeBuilder builder = new ModuleAnalyzer(module).analyze();
         if (LOGGER.haveSematicErrors())
             return;
 
-        // String fileName = new File(input).getName().replaceFirst("[.][^.]+$",
-        // "")+".j";
-        // try (PrintWriter out = new PrintWriter(fileName)) {
-        // out.println(builder.build());
-        // }
+        String code = builder.build();
 
-        System.out.println(builder.build());
+        generateFile(input, code);
 
-        // VariableDesc desc =
-        // VariableDescFactory.INSTANCE.createLocalVariable(VariableType.ARRAY,
-        // false);
-        // Statement st = new Statement();
-        // AddOperation istore = st.add(new IStore(desc));
-        // AddOperation addOperation = istore.add(new IAdd());
-        // addOperation.add(new INeg()).add(new BiPush("4"));
-        // addOperation.add(new BiPush("1"));
-        // AddOperation addOperation2 = addOperation.add(new IAdd());
-        // addOperation2.add(new INeg()).add(new BiPush("10"));
-        // addOperation2.add(new BiPush("20"));
-        // System.out.println(st);
+        if (printCode)
+            System.out.println(code);
+    }
 
+    private void generateFile(String input, String code) throws FileNotFoundException {
+        File file = new File(input);
+        String directory = file.getParent();
+        String fileName = directory + "\\" + file.getName().replaceFirst("[.][^.]+$", "") + ".j";
+
+        try (PrintWriter out = new PrintWriter(fileName)) {
+            out.println(code);
+            System.out.println("Generated: " + fileName);
+        }
+
+        String[] args = { "-d", directory, fileName };
+        new jasmin.Main().run(args);
     }
 }

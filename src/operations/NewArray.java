@@ -11,7 +11,7 @@ public class NewArray extends Operation {
 
     @Override
     public String toString() {
-        return "newarray";
+        return "newarray int";
         // newarray int
     }
 

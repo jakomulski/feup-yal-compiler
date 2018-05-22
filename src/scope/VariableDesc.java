@@ -21,4 +21,8 @@ public interface VariableDesc {
 
     void setName(String name);
 
+    void fill();
+
+    boolean isFill();
+
 }

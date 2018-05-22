@@ -14,6 +14,7 @@ public class LowIrNode {
 
     public LowIrNode(Operation operation) {
         this.operation = operation;
+        this.operation.container = this;
     }
 
     public Operation getOperation() {

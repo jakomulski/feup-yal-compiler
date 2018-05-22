@@ -8,7 +8,7 @@ import yal2jvm.Node;
 import yal2jvm.SimpleNode;
 
 public class Common {
-    private static final Logger LOGGER = Logger.INSTANCE;
+    private static final Logger LOGGER = Logger.getInstance();
 
     public static boolean checkSizeOf(SimpleNode node, Scope scope) {
         String varName = SimpleNode.class.cast(node.jjtGetChild(0)).getTokenValue();

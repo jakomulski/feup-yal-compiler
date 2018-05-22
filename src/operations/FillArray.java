@@ -17,7 +17,7 @@ public class FillArray extends Operation {
 
     @Override
     public String toString() {
-        return "bipush ";
+        return "invokestatic " + this.statement.scope.getModuleName() + "/&fill([II)V";
     }
 
     @Override
