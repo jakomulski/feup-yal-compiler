@@ -18,6 +18,11 @@ public class Statement implements AddOperation {
     private String name;
     private VariableDesc type;
     private StackSizeCounter stackSizeCounter;
+    private boolean cleared = false;
+    private boolean clearBlock = false;
+    private Statement endLabel;
+    private Statement elseEndLabel;
+    private Statement endLoopLabel;
 
     public Statement(SimpleNode node) {
         this.node = node;
@@ -69,7 +74,7 @@ public class Statement implements AddOperation {
     }
 
     public AddOperation add(Operation operation) {
-        this.root = new LowIrNode(operation);
+        this.root = new LowIrNode(operation, this);
         operation.setContainer(this.root);
         operation.setStatement(this);
         return addNode(root, this);
@@ -99,6 +104,8 @@ public class Statement implements AddOperation {
 
     @Override
     public String toString() {
+        if (cleared)
+            return "";
         StringBuilder sb = new StringBuilder();
         // print("", sb, root);
         toStringRec("  ", sb, root);
@@ -126,10 +133,63 @@ public class Statement implements AddOperation {
         optimize(root);
     }
 
+    public void clear() {
+        if (clearBlock)
+            return;
+        this.cleared = true;
+
+    }
+
+    public boolean isCleared() {
+        return cleared;
+    }
+
     private void optimize(LowIrNode node) {
         if (node == null)
             return;
         node.getChildren().forEach(ch -> optimize(ch));
         node.getOperation().optimize();
+    }
+
+    public void blockClear() {
+        this.clearBlock = true;
+
+    }
+
+    public boolean isIf() {
+        return this.endLabel != null;
+    }
+
+    public Statement getIfEndLabel() {
+        return this.endLabel;
+    }
+
+    public void addIfEndLabel(Statement endLabel) {
+        this.endLabel = endLabel;
+
+    }
+
+    public void addElseEndLabel(Statement elseEndLabel) {
+        this.elseEndLabel = elseEndLabel;
+    }
+
+    public boolean isIfElse() {
+        return this.elseEndLabel != null;
+    }
+
+    public Statement getElseEndLabel() {
+        return this.elseEndLabel;
+    }
+
+    public void addLoopEndLabel(Statement endLoopLabel) {
+        this.endLoopLabel = endLoopLabel;
+    }
+
+    public boolean isLoop() {
+        return this.endLoopLabel != null;
+    }
+
+    public Statement getLoopEndLabel() {
+        return this.endLoopLabel;
     }
 }

@@ -2,6 +2,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 
+import custom.Constants;
 import custom.Logger;
 import custom.NameGenerator;
 import ir.CodeBuilder;
@@ -15,34 +16,39 @@ public class Main {
     public final Logger LOGGER = Logger.getInstance();
 
     public static void main(String[] args) throws ParseException, FileNotFoundException {
-        String input = "./examples/programa2.yal";
+        String input = "./examples_test/test.yal";
         // String input = args[0];
 
         Main main = new Main();
-        main.printCode = false;
-
+        Constants.GENERATE_LOCALS = false;
+        Constants.PRINT_CODE = true;
+        Constants.GENERATE_J = false;
+        Constants.DUMP = false;
+        Constants.OPTIMIZE = false;
         for (String arg : args) {
             try {
                 System.out.println("Reading: " + arg);
                 new Main().run(arg);
-                Logger.reset();
-                NameGenerator.reset();
                 System.out.println("");
             } catch (Exception e) {
-                System.out.println("");
+                System.out.println("Not generated" + System.lineSeparator());
             }
+            Logger.reset();
+            NameGenerator.reset();
         }
 
-        main.run(input);
+        try {
+            main.run(input);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("");
+        }
     }
-
-    private boolean dump = false;
-    private boolean printCode = false;
 
     public void run(String input) throws FileNotFoundException, ParseException {
         SimpleNode module = new Yal2jvm(new java.io.FileInputStream(input)).Start();
 
-        if (dump)
+        if (Constants.DUMP)
             Common.dump("", module);
 
         if (LOGGER.haveSyntacticErrors())
@@ -53,9 +59,10 @@ public class Main {
 
         String code = builder.build();
 
-        generateFile(input, code);
+        if (Constants.GENERATE_J)
+            generateFile(input, code);
 
-        if (printCode)
+        if (Constants.PRINT_CODE)
             System.out.println(code);
     }
 
@@ -69,7 +76,9 @@ public class Main {
             System.out.println("Generated: " + fileName);
         }
 
-        String[] args = { "-d", directory, fileName };
-        new jasmin.Main().run(args);
+        if (Constants.GENERATE_CLASS) {
+            String[] args = { "-d", directory, fileName };
+            new jasmin.Main().run(args);
+        }
     }
 }

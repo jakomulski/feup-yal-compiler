@@ -18,6 +18,12 @@ public class ILoad extends Operation {
 
     @Override
     public String toString() {
+        try {
+            if (Integer.parseInt(desc.getName()) <= 3)
+                return "iload_" + desc.getName();
+        } catch (NumberFormatException e) {
+            //
+        }
         return "iload " + desc.getName();
     }
 
@@ -30,4 +36,5 @@ public class ILoad extends Operation {
     public void calculateStackSize(StackSizeCounter stackSizeCounter) {
         stackSizeCounter.push();
     }
+
 }

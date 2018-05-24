@@ -1,5 +1,7 @@
 package scope;
 
+import operations.Operation;
+
 public enum VariableDescFactory {
     INSTANCE;
 
@@ -43,6 +45,8 @@ public enum VariableDescFactory {
         private boolean isField = false;
         private boolean fill = false;
         private String value;
+        private boolean isUsed = true;
+        private Operation operation = null;
 
         public VariableDescImpl(VariableDesc variableDesc) {
             name = VariableDescImpl.class.cast(variableDesc).name;
@@ -113,6 +117,34 @@ public enum VariableDescFactory {
         @Override
         public boolean isFill() {
             return fill;
+        }
+
+        @Override
+        public boolean isUsed() {
+            return isUsed;
+        }
+
+        @Override
+        public void use() {
+            isUsed = true;
+        }
+
+        @Override
+        public Operation getOperation() {
+            if (operation != null && operation.getDesc() != null && operation.getDesc().isField())
+                return null;
+            return operation;
+        }
+
+        @Override
+        public void setOperation(Operation operation) {
+            this.operation = operation;
+        }
+
+        @Override
+        public void setUsed(boolean used) {
+            this.isUsed = used;
+
         }
 
     }

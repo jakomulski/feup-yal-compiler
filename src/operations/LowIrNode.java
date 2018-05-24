@@ -3,16 +3,21 @@ package operations;
 import java.util.ArrayList;
 import java.util.List;
 
+import ir.Statement;
+
 public class LowIrNode {
     private Operation operation;
 
     private List<LowIrNode> children = new ArrayList<>();
 
-    protected void clearChildren() {
+    private Statement statement;
+
+    public void clearChildren() {
         this.children.clear();
     }
 
-    public LowIrNode(Operation operation) {
+    public LowIrNode(Operation operation, Statement statement) {
+        this.statement = statement;
         this.operation = operation;
         this.operation.container = this;
     }
@@ -31,11 +36,17 @@ public class LowIrNode {
 
     public void setOperation(Operation operation) {
         this.operation = operation;
+        operation.container = this;
     }
 
     @Override
     public String toString() {
         return operation.toString();
+    }
+
+    public Statement getStatement() {
+        return statement;
+
     }
 
 }

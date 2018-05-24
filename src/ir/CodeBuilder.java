@@ -6,7 +6,7 @@ import java.util.function.Consumer;
 
 import operations.IPush;
 import operations.LowIrNode;
-import optimization.Optimizer;
+import optimization.RegisterAlocator;
 import scope.Scope;
 
 public class CodeBuilder {
@@ -15,6 +15,12 @@ public class CodeBuilder {
 
     private List<String> fieldsCode = new ArrayList<>();
     private List<String> staticCode = new ArrayList<>();
+
+    private boolean generateFillArray = false;
+
+    void generateFillArray() {
+        this.generateFillArray = true;
+    }
 
     public String build() {
         StringBuilder code = new StringBuilder();
@@ -45,11 +51,12 @@ public class CodeBuilder {
             // append.accept("");
             if (f.getDescription().isMain())
                 append.accept(Templates.getMain(rootScope.getModuleName()));
-            f.build(new Optimizer()).forEach(line -> append.accept(line));
+            f.build(new RegisterAlocator()).forEach(line -> append.accept(line));
         });
 
         append.accept("");
-        append.accept(Templates.getFill());
+        if (generateFillArray)
+            append.accept(Templates.getFill());
 
         return code.toString();
     }
@@ -73,9 +80,10 @@ public class CodeBuilder {
     }
 
     public void addArrayFill(String name, String value) {
+        generateFillArray();
         appendStaticCode("getstatic " + rootScope.getModuleName() + "/" + name + " [I");
 
-        LowIrNode biPushNode = new LowIrNode(new IPush(value));
+        LowIrNode biPushNode = new LowIrNode(new IPush(value), null);
         biPushNode.getOperation().optimize();
         appendStaticCode(biPushNode.getOperation().toString());
         appendStaticCode("invokestatic " + rootScope.getModuleName() + "/&fill([II)V");

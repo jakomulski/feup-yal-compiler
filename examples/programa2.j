@@ -1,121 +1,152 @@
 .class public programa2
 .super java/lang/Object
 
+
 .method public static f1([I)[I
 .limit locals 4
 .limit stack 4
-iconst_0
-istore_1
+   iconst_0
+  istore 2
 
-aload_0
-arraylength
-istore_2
+    aload 0
+   arraylength
+  istore 3
 
-iload_2
-newarray int
-astore_3
+    iload 3
+   newarray int
+  astore 1
 
-loop0:
+  L0:
 
-iload_1
-aload_0
-arraylength
-if_icmpge loop0_end
+   iload 2
+    aload 0
+   arraylength
+  if_icmpge L1
 
-aload_3
-iload_1
-aload_0
-iload_1
-iaload
-iastore
+   aload 1
+   iload 2
+    aload 0
+    iload 2
+   iaload
+  iastore
 
-iinc 1 1
-goto loop0
+  iinc 2 1
 
-loop0_end:
+  goto L0
 
-aload_3
-areturn
+  L1:
+
+   aload 1
+  areturn
+
 .end method
-
 .method public static f2(I)[I
 .limit locals 2
-.limit stack 1
-iload_0
-newarray int
-astore_1
+.limit stack 7
+   getstatic programa2/1 [I
+    iload 0
+   newarray int
+  invokestatic programa2/&fill([II)V
 
-aload_1
-areturn
+   getstatic programa2/1 [I
+   iconst_1
+  invokestatic programa2/&fill([II)V
+
+   aload 1
+  areturn
+
 .end method
-
 .method public static main([Ljava/lang/String;)V
-.limit locals 5
-.limit stack 3
-bipush 100
-newarray int
-astore_0
-
-aload_0
-iconst_0
-iconst_1
-iastore
-aload_0
-bipush 99
-iconst_2
-iastore
-aload_0
-invokestatic programa2/f1([I)[I
-
-astore 4
-
-aload 4
-iconst_0
-iaload
-istore_2
-
-aload 4
-bipush 99
-iaload
-istore_3
-
-ldc "first: "
-iload_2
-invokestatic io/println(Ljava/lang/String;I)V
-
-ldc "last: "
-iload_3
-invokestatic io/println(Ljava/lang/String;I)V
-
-bipush 100
-invokestatic programa2/f2(I)[I
-
-astore 4
-
-aload 4
-iconst_0
-iaload
-istore_2
-
-aload 4
-bipush 99
-iaload
-istore_3
-
-ldc "first: "
-iload_2
-invokestatic io/println(Ljava/lang/String;I)V
-
-ldc "last: "
-iload_3
-invokestatic io/println(Ljava/lang/String;I)V
-
-return
+  .limit locals 1
+  .limit stack 0
+  invokestatic programa2/main()V
+  return
 .end method
 
+.method public static main()V
+.limit locals 4
+.limit stack 3
+    bipush 100
+   newarray int
+  astore 0
 
-.method static public <clinit>()V 
-.limit stack 0
-.limit locals 0
-return 
-.end method 
+   aload 0
+   iconst_0
+   iconst_1
+  iastore
+
+   aload 0
+   bipush 99
+   iconst_2
+  iastore
+
+    aload 0
+   invokestatic programa2/f1([I)[I
+  astore 1
+
+    aload 1
+    iconst_0
+   iaload
+  istore 2
+
+    aload 1
+    bipush 99
+   iaload
+  istore 3
+
+   ldc "first: "
+   iload 2
+  invokestatic io/println(Ljava/lang/String;I)V
+
+   ldc "last: "
+   iload 3
+  invokestatic io/println(Ljava/lang/String;I)V
+
+    bipush 100
+   invokestatic programa2/f2(I)[I
+  astore 1
+
+    aload 1
+    iconst_0
+   iaload
+  istore 2
+
+    aload 1
+    bipush 99
+   iaload
+  istore 3
+
+   ldc "first: "
+   iload 2
+  invokestatic io/println(Ljava/lang/String;I)V
+
+   ldc "last: "
+   iload 3
+  invokestatic io/println(Ljava/lang/String;I)V
+
+  return
+
+.end method
+
+.method public static &fill([II)V
+.limit locals 4
+.limit stack 3
+  iconst_0
+  istore_2
+  aload_0
+  arraylength
+  istore_3
+ L5:
+  iload_2
+  iload_3
+  if_icmpge L20
+  aload_0
+  iload_2
+  iload_1
+  iastore
+  iinc 2 1
+ goto L5
+ L20:
+  return
+.end method
+

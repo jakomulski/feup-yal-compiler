@@ -9,7 +9,7 @@ public interface AddOperation {
 
     default AddOperation addNode(LowIrNode node, Statement statement) {
         return operation -> {
-            LowIrNode newNode = new LowIrNode(operation);
+            LowIrNode newNode = new LowIrNode(operation, statement);
             operation.setContainer(newNode);
             operation.setStatement(statement);
             node.addChild(newNode);

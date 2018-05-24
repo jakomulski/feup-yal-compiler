@@ -17,6 +17,10 @@ public class IPush extends Operation {
 
     }
 
+    public int getIValue() {
+        return iValue;
+    }
+
     @Override
     public String toString() {
         if (iValue == -1)

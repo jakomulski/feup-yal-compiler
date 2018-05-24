@@ -76,6 +76,12 @@ public class IStore extends Operation {
 
     @Override
     public String toString() {
+        try {
+            if (Integer.parseInt(varDesc.getName()) <= 3)
+                return "istore_" + varDesc.getName();
+        } catch (NumberFormatException e) {
+            //
+        }
         return "istore " + varDesc.getName();
     }
 

@@ -1,5 +1,7 @@
 package scope;
 
+import operations.Operation;
+
 public interface VariableDesc {
     VariableDesc initialize();
 
@@ -15,6 +17,14 @@ public interface VariableDesc {
 
     VariableType getType();
 
+    boolean isUsed();
+
+    void use();
+
+    Operation getOperation();
+
+    void setOperation(Operation operation);
+
     VariableDesc setType(VariableType type);
 
     String getName();
@@ -24,5 +34,7 @@ public interface VariableDesc {
     void fill();
 
     boolean isFill();
+
+    void setUsed(boolean used);
 
 }

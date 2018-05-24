@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import custom.Constants;
 import custom.StackSizeCounter;
 import operations.ALoad;
 import operations.AReturn;
@@ -45,6 +46,7 @@ import operations.Operator;
 import operations.PutStatic;
 import operations.Return;
 import optimization.Optimizer;
+import optimization.RegisterAlocator;
 import scope.FunctionDesc;
 import scope.Scope;
 import scope.VariableDesc;
@@ -62,8 +64,11 @@ public class IrBuilder {
     private final List<VariableDesc> localVariables = new ArrayList<>();
     private final List<VariableDesc> parameters = new ArrayList<>();
 
-    public IrBuilder(FunctionDesc desc) {
+    private CodeBuilder codeBuilder;
+
+    public IrBuilder(FunctionDesc desc, CodeBuilder codeBuilder) {
         this.functionDesc = desc;
+        this.codeBuilder = codeBuilder;
         stackSizeCounter = new StackSizeCounter();
     }
 
@@ -71,15 +76,17 @@ public class IrBuilder {
         return functionDesc;
     }
 
-    public List<String> build(Optimizer optimizer) {
+    public List<String> build(RegisterAlocator registerAlocator) {
         statements.forEach(statement -> {
             generateStatement(statement);
-            statement.optimize();
         });
 
-        optimizer.optimize(statements);
-
-        registerAlocation();
+        if (Constants.OPTIMIZE) {
+            new Optimizer(statements).propagateConstants();
+        }
+        // optimizer.optimize(statements);
+        if (Constants.GENERATE_LOCALS)
+            registerAlocation();
         List<Supplier<String>> lines = new ArrayList<>();
         generate(lines);
         return lines.stream().map(s -> s.get()).collect(Collectors.toList());
@@ -96,8 +103,10 @@ public class IrBuilder {
         supLines.add(() -> ".limit locals " + Integer.toString(numberOfLocals));
         supLines.add(() -> ".limit stack " + stackSizeCounter.getStackSize());
         statements.forEach(statement -> {
-            supLines.add(() -> statement.toString());
-            statement.calculateStackSize(stackSizeCounter);
+            if (!statement.isCleared()) {
+                supLines.add(() -> statement.toString());
+                statement.calculateStackSize(stackSizeCounter);
+            }
         });
         supLines.add(() -> ".end method");
     }
@@ -123,10 +132,12 @@ public class IrBuilder {
             statement.add(new Return());
         else if (desc.is(VariableType.ARRAY)) {
             statement.add(new AReturn()).add(new ALoad(desc));
-            parameters.add(desc);
+            if (!parameters.contains(desc))
+                parameters.add(desc);
         } else {
             statement.add(new IReturn()).add(new ILoad(desc));
-            parameters.add(desc);
+            if (!parameters.contains(desc))
+                parameters.add(desc);
         }
     }
 
@@ -197,6 +208,7 @@ public class IrBuilder {
         } else {
             VariableDesc varDesc = scope.getVariable(varName);
             if (varDesc.isFill()) {
+                codeBuilder.generateFillArray();
                 AddOperation addOp = statement.add(new FillArray(varDesc));
                 addOp.add(new GetStatic(scope.getModuleName(), varDesc));
                 generateRHS(scope, node.jjtGetChild(1), addOp);

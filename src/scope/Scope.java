@@ -11,14 +11,19 @@ public abstract class Scope {
         this.parent = parent;
     }
 
+    public Map<String, VariableDesc> getVariables() {
+        return variables;
+    }
+
     public void mergeInitialized(BlockedSimpleScope scope, BlockedSimpleScope... args) {
         scope.blocked.forEach((k, v) -> {
 
             boolean isInitialized = true;
             if (v.isInitialized()) {
-                for (BlockedSimpleScope sc : args)
+                for (BlockedSimpleScope sc : args) {
                     if (!sc.blocked.containsKey(k) || !sc.blocked.get(k).isInitialized())
                         isInitialized = false;
+                }
             } else {
                 isInitialized = false;
             }
@@ -28,12 +33,13 @@ public abstract class Scope {
         });
 
         scope.variables.forEach((k, v) -> {
-
             boolean isInitialized = true;
             if (v.isInitialized()) {
-                for (BlockedSimpleScope sc : args)
+                for (BlockedSimpleScope sc : args) {
                     if (!sc.variables.containsKey(k) || !sc.variables.get(k).isInitialized())
                         isInitialized = false;
+                    sc.addVariable(k, v);
+                }
             } else {
                 isInitialized = false;
             }

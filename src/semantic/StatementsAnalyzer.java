@@ -53,7 +53,7 @@ public class StatementsAnalyzer {
                 Statement endLoopLabel = new Statement();
                 Statement goToLoop = new Statement().setRef(loopLabel);
 
-                irBuilder.addLabelStatement(loopLabel);
+                Statement loop = irBuilder.addLabelStatement(loopLabel);
 
                 irBuilder.addStatement(statement, scope).setRef(endLoopLabel);
 
@@ -69,6 +69,7 @@ public class StatementsAnalyzer {
 
                 irBuilder.addGoToStatement(goToLoop);
                 irBuilder.addLabelStatement(endLoopLabel);
+                loop.addLoopEndLabel(endLoopLabel);
 
             } else if (statement.is(JJTIF)) {
 
@@ -76,7 +77,7 @@ public class StatementsAnalyzer {
                 Statement endElseLabel = new Statement();
                 Statement goToEndElse = new Statement().setRef(endElseLabel);
 
-                irBuilder.addStatement(statement, scope).setRef(endIfLabel);
+                Statement ifIcmp = irBuilder.addStatement(statement, scope).setRef(endIfLabel);
 
                 SimpleNode condition = statement.jjtGetChild(0);
                 SimpleNode lhs = condition.jjtGetChild(0);
@@ -93,14 +94,18 @@ public class StatementsAnalyzer {
                 analyzeStatements(ifStatements, ifScope);
 
                 if (statement.jjtGetNumChildren() == 3) {
+                    ifIcmp.addIfEndLabel(endIfLabel);
+                    ifIcmp.addElseEndLabel(endElseLabel);
+
                     irBuilder.addGoToStatement(goToEndElse);
                     irBuilder.addLabelStatement(endIfLabel);
                     SimpleNode elseStatements = statement.jjtGetChild(2);
                     analyzeStatements(elseStatements, elseScope);
-
                     irBuilder.addLabelStatement(endElseLabel);
-                } else
+                } else {
                     irBuilder.addLabelStatement(endIfLabel);
+                    ifIcmp.addIfEndLabel(endIfLabel);
+                }
                 scope.mergeInitialized(ifScope, elseScope);
             }
         }
@@ -248,6 +253,9 @@ public class StatementsAnalyzer {
             } else if (!desc.is(returnType)) {
                 LOGGER.semanticError(assignment, "incorrect type " + desc.getType() + " " + returnType);
             }
+            // By default should be scalar
+            if (desc.is(VariableType.ANY))
+                desc.setType(VariableType.SCALAR);
 
         } else if (assignment.is(JJTVARIABLE)) {
             String name = assignment.getTokenValue();

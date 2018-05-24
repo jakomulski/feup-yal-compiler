@@ -146,10 +146,13 @@ public class ModuleAnalyzer {
         String name = node.getTokenValue();
 
         FunctionDesc fnDesc = new FunctionDesc(name);
-        IrBuilder irBuilder = new IrBuilder(fnDesc);
+        IrBuilder irBuilder = new IrBuilder(fnDesc, codeBuilder);
         codeBuilder.addIrBuilder(irBuilder);
-        VariableDesc returnVar = analyzeFunctionReturn(node.jjtGetChild(0), fnDesc, functionScope);
+
         analyzeFunctionParameters(node.jjtGetChild(1), fnDesc, functionScope, irBuilder);
+        VariableDesc returnVar = analyzeFunctionReturn(node.jjtGetChild(0), fnDesc, functionScope);
+
+        // when return value is parameter
 
         rootScope.addFunction(name, fnDesc);
         SimpleNode statementsNode = node.jjtGetChild(2);
@@ -159,6 +162,7 @@ public class ModuleAnalyzer {
             new StatementsAnalyzer(irBuilder).analyzeStatements(statementsNode, functionScope);
 
             irBuilder.addReturnValue(returnVar);
+
             if (!returnVar.isInitialized())
                 LOGGER.semanticError(statementsNode, "return value is not initialized");
 
@@ -176,13 +180,24 @@ public class ModuleAnalyzer {
             if (returnNode.is(JJTARRAYVARIABLE)) {
                 retVar = VariableDescFactory.INSTANCE.createLocalVariable(VariableType.ARRAY, false);
                 fnDesc.setReturnType(VariableType.ARRAY);
-                functionScope.addVariable(returnNode.getTokenValue(), retVar);
             } else if (returnNode.is(JJTSCALARVARIABLE)) {
                 retVar = VariableDescFactory.INSTANCE.createLocalVariable(VariableType.SCALAR, false);
                 fnDesc.setReturnType(VariableType.SCALAR);
-                functionScope.addVariable(returnNode.getTokenValue(), retVar);
+            }
+            String name = returnNode.getTokenValue();
+            retVar.setName(name);
+            if (functionScope.hasVariable(name)) {
+                VariableDesc parameterDesc = functionScope.getVariable(name);
+                if (!parameterDesc.is(retVar.getType())) {
+                    LOGGER.semanticError(returnNode, "incorrect type");
+                } else {
+                    return parameterDesc;
+                }
+            } else {
+                functionScope.addVariable(name, retVar);
             }
         }
+
         return retVar;
     }
 

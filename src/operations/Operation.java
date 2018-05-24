@@ -28,4 +28,12 @@ public abstract class Operation {
     @Override
     public abstract String toString();
 
+    public LowIrNode getContainer() {
+        return container;
+    }
+
+    public Statement getStatement() {
+        return statement;
+    }
+
 }
