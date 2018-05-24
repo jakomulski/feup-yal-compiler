@@ -20,11 +20,11 @@ public class Main {
         // String input = args[0];
 
         Main main = new Main();
-        Constants.GENERATE_LOCALS = false;
-        Constants.PRINT_CODE = true;
-        Constants.GENERATE_J = false;
+        Constants.GENERATE_LOCALS = true;
+        Constants.PRINT_CODE = false;
+        Constants.GENERATE_J = true;
         Constants.DUMP = false;
-        Constants.OPTIMIZE = false;
+        Constants.OPTIMIZE = true;
         for (String arg : args) {
             try {
                 System.out.println("Reading: " + arg);

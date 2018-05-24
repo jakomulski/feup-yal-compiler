@@ -3,10 +3,18 @@ package ir;
 import operations.Operation;
 
 public class Constant {
-    public static final Constant VARIABLE = new Constant(null, null);
 
     private Statement statement;
     private Operation operation;
+
+    public boolean isConstant() {
+        return operation != null;
+    }
+
+    public Constant(Statement statement) {
+        this.setStatement(statement);
+        this.operation = null;
+    }
 
     public Constant(Statement statement, Operation operation) {
         this.setStatement(statement);

@@ -96,7 +96,7 @@ public class StatementsAnalyzer {
                 if (statement.jjtGetNumChildren() == 3) {
                     ifIcmp.addIfEndLabel(endIfLabel);
                     ifIcmp.addElseEndLabel(endElseLabel);
-
+                    ifIcmp.addGoToEndElseStatement(goToEndElse);
                     irBuilder.addGoToStatement(goToEndElse);
                     irBuilder.addLabelStatement(endIfLabel);
                     SimpleNode elseStatements = statement.jjtGetChild(2);

@@ -23,6 +23,7 @@ public class Statement implements AddOperation {
     private Statement endLabel;
     private Statement elseEndLabel;
     private Statement endLoopLabel;
+    private Statement goToEndElseStatement;
 
     public Statement(SimpleNode node) {
         this.node = node;
@@ -191,5 +192,13 @@ public class Statement implements AddOperation {
 
     public Statement getLoopEndLabel() {
         return this.endLoopLabel;
+    }
+
+    public void addGoToEndElseStatement(Statement goToEndElse) {
+        this.goToEndElseStatement = goToEndElse;
+    }
+
+    public Statement getGoToEndElseStatement() {
+        return this.goToEndElseStatement;
     }
 }
