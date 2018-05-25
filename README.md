@@ -23,7 +23,7 @@
 - optimization
 	- constant folding
 	- constant propagation
-	- dead codes removal
+	- dead code removal
 ## Usage ##
 
 -o	optimization
