@@ -20,8 +20,14 @@
 	- fixes
 - code generation
 	- fixes
-
+- optimization
+	- constant folding
+	- constant propagation
+	- dead code removal
 ## Usage ##
+
+-o	optimization
+
 ![Example](images/example.png)
 
 ## Examples ###
