@@ -5,12 +5,14 @@ options
   NODE_SCOPE_HOOK = true;
   //TRACK_TOKENS = true;
   MULTI = false;
-  JJTREE_OUTPUT_DIRECTORY = "yal2jvm";
+  JJTREE_OUTPUT_DIRECTORY = "jjtree";
 }
 
 PARSER_BEGIN(Yal2jvm)
-package yal2jvm;
-import custom.Logger;
+package jjtree;
+import jjtree.SimpleNode;
+import yal2jvm.common.Logger;
+import jjtree.SimpleNode;
 
 public class Yal2jvm
 {
