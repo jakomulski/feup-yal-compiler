@@ -24,9 +24,21 @@
 	- constant folding
 	- constant propagation
 	- dead code removal
+- register alocation
+	- left edge algorithm
+
+## Final delivery ##
+- fixes
+- optimization
+	- operators optimization: (x*2 -> x+x)
+	- loops templates
+- register alocation
+	- graph coloring
+
 ## Usage ##
 
 -o	optimization
+-r register alocation (left edge algorithm)
 
 ![Example](images/example.png)
 
