@@ -15,7 +15,9 @@ import static jjtree.Yal2jvmTreeConstants.JJTVARIABLE;
 import static jjtree.Yal2jvmTreeConstants.JJTWHILE;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -97,11 +99,20 @@ public class IrBuilder {
         return lines.stream().map(s -> s.get()).collect(Collectors.toList());
     }
 
+    private int calculateLimitLocals() {
+        final Set<String> locals = new HashSet<>();
+        parameters.forEach(p -> locals.add(p.getName()));
+        localVariables.forEach(v -> locals.add(v.getName()));
+        return locals.size();
+
+    }
+
     private void generate(List<Supplier<String>> supLines) {
         supLines.add(() -> ".method public static " + functionDesc.asJasmin());
-        int numberOfLocals = parameters.size() + localVariables.size();
 
-        supLines.add(() -> ".limit locals " + Integer.toString(numberOfLocals));
+        int limitLocals = calculateLimitLocals();
+
+        supLines.add(() -> ".limit locals " + Integer.toString(limitLocals));
         supLines.add(() -> ".limit stack " + stackSizeCounter.getStackSize());
         statements.forEach(statement -> {
             if (!statement.isCleared()) {

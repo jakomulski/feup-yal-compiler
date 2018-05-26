@@ -7,9 +7,11 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import yal2jvm.dataflow.algorithms.LeftEdgeAlgorithm;
 import yal2jvm.dataflow.algorithms.RegisterAlocationAlgorithm;
+import yal2jvm.dataflow.algorithms.leftedge.LeftEdgeAlgorithm;
 import yal2jvm.ir.Statement;
+import yal2jvm.ir.operations.IStore;
+import yal2jvm.ir.operations.Operation;
 import yal2jvm.scope.VariableDesc;
 
 public class RegisterAlocator {
@@ -45,7 +47,7 @@ public class RegisterAlocator {
             if (registersMap.containsKey(varName))
                 v.setName(Integer.toString(registersMap.get(varName)));
             else {
-                v.setName("ERROR");
+                removeUnused(v.getName());
             }
         });
         localVariables.forEach(v -> {
@@ -53,9 +55,18 @@ public class RegisterAlocator {
             if (registersMap.containsKey(varName))
                 v.setName(Integer.toString(registersMap.get(varName)));
             else {
-                v.setName("ERROR");
+                removeUnused(v.getName());
             }
         });
+    }
 
+    private void removeUnused(String unUsed) {
+        for (Statement s : statements) {
+            Operation operation = s.root.getOperation();
+            if (operation.getClass().equals(IStore.class)) {
+                if (IStore.class.cast(operation).getDesc().getName().equals(unUsed))
+                    s.clear();
+            }
+        }
     }
 }

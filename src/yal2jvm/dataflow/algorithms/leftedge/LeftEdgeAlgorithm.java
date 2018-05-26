@@ -18,6 +18,9 @@ public class LeftEdgeAlgorithm implements RegisterAlocationAlgorithm {
     @Override
     public Map<String, Integer> alocate(List<String> parameters, List<String> localVariables,
             Collection<LivenessTableRow> livenessTable) {
+
+        // System.out.println(parameters);
+
         Map<String, Integer> alocationMap = new HashMap<>();
         // System.out.println(livenessTable);
         List<LiveRange> variables = getLiveRanges(livenessTable);
@@ -42,16 +45,27 @@ public class LeftEdgeAlgorithm implements RegisterAlocationAlgorithm {
 
         // Ensure that parameters have good registers
         Set<Integer> usedRegisters = new HashSet<>();
-        parametersIterator: for (int i = 0; i < parameters.size(); ++i) {
+        parametersIterator: for (int i = 0; i < parameters.size(); i++) {
             for (Segment s : segments) {
                 if (s.contains(parameters.get(i))) {
-                    s.setRegister(i);
-                    usedRegisters.add(i);
+                    if (s.getRegisterNum() == null) {
+                        s.setRegister(i);
+                        usedRegisters.add(i);
+                    }
                     continue parametersIterator;
                 }
             }
             alocationMap.put(parameters.get(i), i);
         }
+
+        // segments.forEach(s -> {
+        // s.forEach(e -> alocationMap.put(e.getName(), s.getRegisterNum()));
+        // System.out.println("---");
+        // System.out.println(s.getRegisterNum());
+        // s.getLiveRanges().forEach(el -> System.out.print(el.getName() + ""));
+        // System.out.println();
+        //
+        // });
 
         // Alocate registers to the rest of the segments
         int register = 0;

@@ -17,7 +17,12 @@ import yal2jvm.semantic.ModuleAnalyzer;
 public class Main {
     public final Logger LOGGER = Logger.getInstance();
 
-    public static void main(String[] args) throws ParseException, FileNotFoundException {
+    public static void main(String[] args) {
+        run(args);
+        // forTest();
+    }
+
+    private static void run(String[] args) {
         for (String arg : args) {
             if (arg.startsWith("-")) {
                 setOption(arg);
@@ -29,14 +34,18 @@ public class Main {
                 System.out.println("");
             } catch (Exception e) {
                 System.out.println("Not generated" + System.lineSeparator());
+                e.printStackTrace();
             }
             Logger.reset();
             NameGenerator.reset();
         }
     }
 
-    private void forTest() {
-        String input = "./examples_test/test.yal";
+    private static void forTest() {
+        String input = "./new_examples_test/register-test.yal";
+        Constants.PRINT_CODE = true;
+        Constants.GENERATE_J = false;
+        Constants.OPTIMIZED_REGISTER_ALOCATION = true;
         Main main = new Main();
         try {
             main.run(input);
