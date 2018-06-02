@@ -42,7 +42,7 @@ public class Main {
     }
 
     private static void forTest() {
-        String input = "./examples_test/aval7.yal";
+        String input = "./examples_test/test.yal";
         Constants.PRINT_CODE = true;
         Constants.GENERATE_J = true;
         Constants.OPTIMIZE = true;
