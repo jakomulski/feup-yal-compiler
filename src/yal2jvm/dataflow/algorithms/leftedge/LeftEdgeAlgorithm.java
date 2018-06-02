@@ -71,6 +71,7 @@ public class LeftEdgeAlgorithm implements RegisterAlocationAlgorithm {
             s.setRegister(register++);
         }
 
+        // fill the alocation map
         segments.forEach(s -> {
             s.forEach(e -> alocationMap.put(e.getName(), s.getRegisterNum()));
         });

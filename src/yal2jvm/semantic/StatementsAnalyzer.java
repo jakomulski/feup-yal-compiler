@@ -53,9 +53,9 @@ public class StatementsAnalyzer {
                 Statement endLoopLabel = new Statement();
                 Statement goToLoop = new Statement().setRef(loopLabel);
 
-                Statement loop = irBuilder.addLabelStatement(loopLabel);
+                irBuilder.addLabelStatement(loopLabel);
 
-                irBuilder.addStatement(statement, scope).setRef(endLoopLabel);
+                Statement loopCondition = irBuilder.addStatement(statement, scope).setRef(endLoopLabel);
 
                 SimpleNode condition = statement.jjtGetChild(0);
                 SimpleNode lhs = condition.jjtGetChild(0);
@@ -69,7 +69,8 @@ public class StatementsAnalyzer {
 
                 irBuilder.addGoToStatement(goToLoop);
                 irBuilder.addLabelStatement(endLoopLabel);
-                loop.addLoopEndLabel(endLoopLabel);
+                loopLabel.addLoopCondition(loopCondition);
+                loopLabel.addLoopEndLabel(endLoopLabel);
 
             } else if (statement.is(JJTIF)) {
 

@@ -42,9 +42,10 @@ public class Main {
     }
 
     private static void forTest() {
-        String input = "./new_examples_test/register-test.yal";
+        String input = "./examples_test/aval7.yal";
         Constants.PRINT_CODE = true;
-        Constants.GENERATE_J = false;
+        Constants.GENERATE_J = true;
+        Constants.OPTIMIZE = true;
         Constants.OPTIMIZED_REGISTER_ALOCATION = true;
         Main main = new Main();
         try {

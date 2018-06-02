@@ -10,6 +10,8 @@ import java.util.Set;
 
 import yal2jvm.common.StatementsIterator;
 import yal2jvm.ir.Statement;
+import yal2jvm.ir.operations.ALoad;
+import yal2jvm.ir.operations.AStore;
 import yal2jvm.ir.operations.IInc;
 import yal2jvm.ir.operations.ILoad;
 import yal2jvm.ir.operations.IPush;
@@ -26,21 +28,6 @@ public class ConstantsPropagator {
         this.statements = statements;
     }
 
-    private Optional<Boolean> checkCondition(Statement s) {
-        Operation ifIcmp = s.root.getOperation();
-
-        if (ifIcmp.getClass().equals(IfIcmp.class)) {
-            Operation firstCondition = s.root.getChildren().get(0).getOperation();
-            Operation secondCondition = s.root.getChildren().get(1).getOperation();
-            if (firstCondition.getClass().equals(IPush.class) && secondCondition.getClass().equals(IPush.class)) {
-                boolean condition = IfIcmp.class.cast(ifIcmp).checkCondition(
-                        IPush.class.cast(firstCondition).getIValue(), IPush.class.cast(secondCondition).getIValue());
-                return Optional.of(condition);
-            }
-        }
-        return Optional.empty();
-    }
-
     private Set<String> globalyUsed = new HashSet<>();
 
     public void propagateConstants() {
@@ -51,12 +38,14 @@ public class ConstantsPropagator {
         while (stmtIterator.hasNext()) {
             Statement s = stmtIterator.next();
             setConstant(s.root, declared);
-            s.optimize();
+
             setUsage(s.root, used);
             addDeclarationAndClearPrevious(s, declared, used);
-
+            s.optimize();
             if (s.isIfElse()) {
-                propagateConstantsForIfElse(checkCondition(s), stmtIterator, declared, used, s);
+                propagateConstantsForIfElse(checkCondition(s), stmtIterator, declared, used, s).forEach((k, v) -> {
+                    declared.put(k, new Constant(v.getStatement()));
+                });
             } else if (s.isIf()) {
                 Optional<Boolean> checked = checkCondition(s);
                 if (checked.isPresent()) {
@@ -74,7 +63,15 @@ public class ConstantsPropagator {
                     declared.put(k, new Constant(v.getStatement()));
                 });
             } else if (s.isLoop()) {
-                propagateConstantsInLoopBlock(stmtIterator, s.getLoopEndLabel(), declared, used).forEach((k, v) -> {
+                Optional<Boolean> checked = checkCondition(s.getLoopCondition());
+                if (checked.isPresent()) {
+                    if (!checked.get()) { // Omit while block
+                        s.clear();
+                        omit(stmtIterator, s.getLoopEndLabel());
+                        continue;
+                    }
+                }
+                propagateConstantsInLoopBlock(stmtIterator, new HashMap<>(declared), used, s).forEach((k, v) -> {
                     declared.put(k, new Constant(v.getStatement()));
                 });
             }
@@ -82,13 +79,151 @@ public class ConstantsPropagator {
 
         statements.forEach(s -> {
             Operation rootOperation = s.root.getOperation();
-            if (rootOperation.getClass().equals(IStore.class)) {
+            if (rootOperation.getClass().equals(IStore.class) || rootOperation.getClass().equals(AStore.class)) {
                 String name = rootOperation.getDesc().getName();
                 if (!globalyUsed.contains(name)) {
                     s.clear();
                 }
             }
         });
+    }
+
+    private Map<String, Constant> propagateConstantsInBlock(Iterator<Statement> stmtIterator, Statement endStatement,
+            Map<String, Constant> declaredInParent, Set<String> usedInParent) {
+
+        Map<String, Constant> newDeclared = new HashMap<>();
+        Set<String> newUsed = new HashSet<>();
+
+        while (stmtIterator.hasNext()) {
+            Statement s = stmtIterator.next();
+            // setConstant(s.root, declaredInParent);
+            setConstant(s.root, union(declaredInParent, newDeclared));
+
+            setUsage(s.root, usedInParent);
+            setUsage(s.root, newUsed);
+
+            addDeclarationAndClearPrevious(s, newDeclared, newUsed);
+            s.optimize();
+            if (s.equals(endStatement)) {
+                break;
+            }
+
+            if (s.isIfElse())
+                propagateConstantsForIfElse(checkCondition(s), stmtIterator, union(newDeclared, declaredInParent),
+                        usedInParent, s).forEach((k, v) -> {
+                            newDeclared.put(k, new Constant(v.getStatement()));
+                        });
+            else if (s.isIf()) {
+                Optional<Boolean> checked = checkCondition(s);
+                if (checked.isPresent()) {
+                    if (!checked.get()) {
+                        s.clear();
+                        omit(stmtIterator, s.getIfEndLabel());
+                        continue; // Do not threat is as if
+                    } else {
+                        s.getIfEndLabel().clear();
+                        s.clear();
+                        continue;
+                    }
+                }
+                propagateConstantsInBlock(stmtIterator, s.getIfEndLabel(), union(newDeclared, declaredInParent),
+                        usedInParent).forEach((k, v) -> {
+                            newDeclared.put(k, new Constant(v.getStatement()));
+                        });
+            } else if (s.isLoop()) {
+                Optional<Boolean> checked = checkCondition(s.getLoopCondition());
+                if (checked.isPresent()) {
+                    if (!checked.get()) { // Omit while block
+                        s.clear();
+                        omit(stmtIterator, s.getLoopEndLabel());
+                        continue;
+                    }
+                }
+                propagateConstantsInLoopBlock(stmtIterator, union(newDeclared, declaredInParent), usedInParent, s)
+                        .forEach((k, v) -> {
+                            newDeclared.put(k, new Constant(v.getStatement()));
+                        });
+            }
+        }
+        return newDeclared;
+    }
+
+    private Map<String, Constant> propagateConstantsForIfElse(Optional<Boolean> checked,
+            Iterator<Statement> stmtIterator, Map<String, Constant> declared, Set<String> used, Statement s) {
+        Statement endIfStatement = s.getIfEndLabel();
+        Statement endElseStatement = s.getElseEndLabel();
+        Map<String, Constant> newDeclared = new HashMap<>();
+        if (checked.isPresent()) {
+            s.clear();
+            if (checked.get())
+                findAndOmit(endIfStatement, endElseStatement);
+            else
+                omit(stmtIterator, endIfStatement);
+
+            s.getIfEndLabel().clear();
+            s.getElseEndLabel().clear();
+            s.getGoToEndElseStatement().clear();
+            return newDeclared;
+        }
+
+        Map<String, Constant> ifDeclared = propagateConstantsInBlock(stmtIterator, endIfStatement, declared, used);
+        Map<String, Constant> elseDeclared = propagateConstantsInBlock(stmtIterator, endElseStatement, declared, used);
+
+        ifDeclared.forEach((k, v) -> {
+            newDeclared.put(k, new Constant(v.getStatement()));
+        });
+        elseDeclared.forEach((k, v) -> {
+            newDeclared.put(k, new Constant(v.getStatement()));
+        });
+        return newDeclared;
+    }
+
+    private Map<String, Constant> propagateConstantsInLoopBlock(Iterator<Statement> stmtIterator,
+            Map<String, Constant> declared, Set<String> used, Statement s) {
+        precheckLoop(s.getLoopCondition(), s.getLoopEndLabel(), declared, used);
+        return propagateConstantsInBlock(stmtIterator, s.getLoopEndLabel(), declared, used);
+    }
+
+    private void precheckLoop(Statement startStatement, Statement endStatement, Map<String, Constant> declared,
+            Set<String> used) {
+        Iterator<Statement> stmtIterator = statements.iterator();
+
+        // find start statement
+        Statement s = null;
+        while (stmtIterator.hasNext()) {
+            s = stmtIterator.next();
+            if (s.equals(startStatement))
+                break;
+        }
+
+        // remove declarations if are redeclared
+        while (stmtIterator.hasNext()) {
+            s = stmtIterator.next();
+            Operation rootOperation = s.root.getOperation();
+            if (rootOperation.getClass().equals(AStore.class) || rootOperation.getClass().equals(IStore.class)
+                    || rootOperation.getClass().equals(IInc.class)) {
+                String name = rootOperation.getDesc().getName();
+                declared.remove(name);
+            }
+
+            if (s.equals(endStatement))
+                break;
+        }
+    }
+
+    private Optional<Boolean> checkCondition(Statement s) {
+        Operation ifIcmp = s.root.getOperation();
+
+        if (ifIcmp.getClass().equals(IfIcmp.class)) {
+            Operation firstCondition = s.root.getChildren().get(0).getOperation();
+            Operation secondCondition = s.root.getChildren().get(1).getOperation();
+            if (firstCondition.getClass().equals(IPush.class) && secondCondition.getClass().equals(IPush.class)) {
+                boolean condition = IfIcmp.class.cast(ifIcmp).checkCondition(
+                        IPush.class.cast(firstCondition).getIValue(), IPush.class.cast(secondCondition).getIValue());
+                return Optional.of(condition);
+            }
+        }
+        return Optional.empty();
     }
 
     private void omit(Iterator<Statement> stmtIterator, Statement endStatement) {
@@ -137,7 +272,7 @@ public class ConstantsPropagator {
         if (node == null)
             return;
         Operation operation = node.getOperation();
-        if (operation.getClass().equals(ILoad.class)) {
+        if (operation.getClass().equals(ILoad.class) || operation.getClass().equals(ALoad.class)) {
             String varName = operation.getDesc().getName();
             if (declared.containsKey(varName) && declared.get(varName).isConstant()) {
                 LowIrNode container = operation.getContainer();
@@ -154,7 +289,7 @@ public class ConstantsPropagator {
          * if not used
          */
         Operation rootOperation = s.root.getOperation();
-        if (rootOperation.getClass().equals(IStore.class)) {
+        if (rootOperation.getClass().equals(IStore.class) || rootOperation.getClass().equals(AStore.class)) {
             clearDeclaration(rootOperation, declared, used);
             if (s.root.getChildren().size() == 1) {
                 Operation childOperation = s.root.getChildren().get(0).getOperation();
@@ -163,16 +298,6 @@ public class ConstantsPropagator {
                     return;
                 }
             }
-            declared.put(rootOperation.getDesc().getName(), new Constant(s));
-        }
-    }
-
-    private void addVariable(Statement s, Map<String, Constant> declared, Set<String> used) {
-        /**
-         * Adds variable to @param declared
-         */
-        Operation rootOperation = s.root.getOperation();
-        if (rootOperation.getClass().equals(IStore.class)) {
             declared.put(rootOperation.getDesc().getName(), new Constant(s));
         }
     }
@@ -194,7 +319,8 @@ public class ConstantsPropagator {
         if (node == null)
             return;
         Operation operation = node.getOperation();
-        if (operation.getClass().equals(ILoad.class) || operation.getClass().equals(IInc.class)) {
+        if (operation.getClass().equals(ALoad.class) || operation.getClass().equals(ILoad.class)
+                || operation.getClass().equals(IInc.class)) {
             String name = operation.getDesc().getName();
             used.add(name);
             this.globalyUsed.add(name);
@@ -202,149 +328,10 @@ public class ConstantsPropagator {
         node.getChildren().forEach(ch -> setUsage(ch, used));
     }
 
-    private void propagateConstantsForIfElse(Optional<Boolean> checked, Iterator<Statement> stmtIterator,
-            Map<String, Constant> declared, Set<String> used, Statement s) {
-        Statement endIfStatement = s.getIfEndLabel();
-        Statement endElseStatement = s.getElseEndLabel();
-        if (checked.isPresent()) {
-            s.clear();
-            if (checked.get()) {
-                // TODO CLEAR STATEMENTS
-                findAndOmit(endIfStatement, endElseStatement);
-
-                // propagateConstantsInBlock(stmtIterator, endIfStatement,
-                // declared, used).forEach((k, v) -> {
-                // declared.put(k, new Constant(v.getStatement()));
-                // });
-                // omit(stmtIterator, endElseStatement);
-            } else {
-                omit(stmtIterator, endIfStatement);
-                // propagateConstantsInBlock(stmtIterator, endElseStatement,
-                // declared, used).forEach((k, v) -> {
-                // declared.put(k, new Constant(v.getStatement()));
-                // });
-
-            }
-            s.getIfEndLabel().clear();
-            s.getElseEndLabel().clear();
-            s.getGoToEndElseStatement().clear();
-            return;
-        }
-
-        propagateConstantsInBlock(stmtIterator, endIfStatement, declared, used).forEach((k, v) -> {
-            declared.put(k, new Constant(v.getStatement()));
-        });
-        propagateConstantsInBlock(stmtIterator, endElseStatement, declared, used).forEach((k, v) -> {
-            declared.put(k, new Constant(v.getStatement()));
-        });
-    }
-
-    private Map<String, Constant> propagateConstantsInBlock(Iterator<Statement> stmtIterator, Statement endStatement,
-            Map<String, Constant> declaredInParent, Set<String> usedInParent) {
-
-        Map<String, Constant> newDeclared = new HashMap<>();
-        Set<String> newUsed = new HashSet<>();
-
-        while (stmtIterator.hasNext()) {
-            Statement s = stmtIterator.next();
-            // setConstant(s.root, declaredInParent);
-            setConstant(s.root, union(declaredInParent, newDeclared));
-
-            s.optimize();
-            setUsage(s.root, usedInParent);
-            setUsage(s.root, newUsed);
-
-            addDeclarationAndClearPrevious(s, newDeclared, newUsed);
-
-            if (s.equals(endStatement)) {
-                break;
-            }
-
-            if (s.isIfElse())
-                propagateConstantsForIfElse(checkCondition(s), stmtIterator, union(newDeclared, declaredInParent),
-                        usedInParent, s);
-            else if (s.isIf()) {
-                Optional<Boolean> checked = checkCondition(s);
-                if (checked.isPresent()) {
-                    if (!checked.get()) {
-                        s.clear();
-                        omit(stmtIterator, s.getIfEndLabel());
-                        continue; // Do not threat is as if
-                    } else {
-                        s.getIfEndLabel().clear();
-                        s.clear();
-                        continue;
-                    }
-                }
-                propagateConstantsInBlock(stmtIterator, s.getIfEndLabel(), union(newDeclared, declaredInParent),
-                        usedInParent).forEach((k, v) -> {
-                            newDeclared.put(k, new Constant(v.getStatement()));
-                        });
-            } else if (s.isLoop()) {
-                propagateConstantsInLoopBlock(stmtIterator, s.getLoopEndLabel(), union(newDeclared, declaredInParent),
-                        usedInParent).forEach((k, v) -> {
-                            newDeclared.put(k, new Constant(v.getStatement()));
-                        });
-            }
-        }
-        return newDeclared;
-    }
-
     private Map<String, Constant> union(Map<String, Constant> first, Map<String, Constant> second) {
         Map<String, Constant> union = new HashMap<>(first);
         union.putAll(second);
         return union;
-    }
-
-    private Map<String, Constant> propagateConstantsInLoopBlock(Iterator<Statement> stmtIterator,
-            Statement endStatement, Map<String, Constant> declaredInParent, Set<String> usedInParent) {
-
-        Map<String, Constant> newDeclared = new HashMap<>();
-        Set<String> newUsed = new HashSet<>();
-
-        while (stmtIterator.hasNext()) {
-            Statement s = stmtIterator.next();
-            // setConstant(s.root, declaredInParent);
-            setConstant(s.root, newDeclared);
-
-            s.optimize();
-            setUsage(s.root, usedInParent);
-            setUsage(s.root, newUsed);
-
-            addDeclarationAndClearPrevious(s, newDeclared, newUsed);
-
-            if (s.equals(endStatement)) {
-                break;
-            }
-
-            if (s.isIfElse())
-                propagateConstantsForIfElse(checkCondition(s), stmtIterator, newDeclared, usedInParent, s);
-            else if (s.isIf()) {
-                Optional<Boolean> checked = checkCondition(s);
-                if (checked.isPresent()) {
-                    if (!checked.get()) {
-                        s.clear();
-                        omit(stmtIterator, s.getIfEndLabel());
-                        continue; // Do not threat is as if
-                    } else {
-                        s.getIfEndLabel().clear();
-                        s.clear();
-                        continue;
-                    }
-                }
-                propagateConstantsInBlock(stmtIterator, s.getIfEndLabel(), newDeclared, usedInParent)
-                        .forEach((k, v) -> {
-                            newDeclared.put(k, new Constant(v.getStatement()));
-                        });
-            } else if (s.isLoop()) {
-                propagateConstantsInLoopBlock(stmtIterator, s.getLoopEndLabel(), newDeclared, usedInParent)
-                        .forEach((k, v) -> {
-                            newDeclared.put(k, new Constant(v.getStatement()));
-                        });
-            }
-        }
-
-        return newDeclared;
     }
 
 }

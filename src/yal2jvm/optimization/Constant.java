@@ -6,7 +6,7 @@ import yal2jvm.ir.operations.Operation;
 public class Constant {
 
     private Statement statement;
-    private Operation operation;
+    private Operation operation = null;
 
     public boolean isConstant() {
         return operation != null;
