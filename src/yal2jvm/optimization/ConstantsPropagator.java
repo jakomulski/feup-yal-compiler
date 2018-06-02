@@ -43,11 +43,12 @@ public class ConstantsPropagator {
             addDeclarationAndClearPrevious(s, declared, used);
 
             if (s.isIfElse()) {
-                propagateConstantsForIfElse(checkCondition(s), stmtIterator, declared, used, s).forEach((k, v) -> {
-                    declared.put(k, new Constant(v.getStatement()));
-                });
+                propagateConstantsForIfElse(checkCondition(s, declared), stmtIterator, declared, used, s)
+                        .forEach((k, v) -> {
+                            declared.put(k, new Constant(v.getStatement()));
+                        });
             } else if (s.isIf()) {
-                Optional<Boolean> checked = checkCondition(s);
+                Optional<Boolean> checked = checkCondition(s, declared);
                 if (checked.isPresent()) {
                     if (!checked.get()) {
                         s.clear();
@@ -63,7 +64,7 @@ public class ConstantsPropagator {
                     declared.put(k, new Constant(v.getStatement()));
                 });
             } else if (s.isLoop()) {
-                Optional<Boolean> checked = checkCondition(s.getLoopCondition());
+                Optional<Boolean> checked = checkCondition(s.getLoopCondition(), declared);
                 if (checked.isPresent()) {
                     if (!checked.get()) { // Omit while block
                         s.clear();
@@ -110,12 +111,12 @@ public class ConstantsPropagator {
             }
 
             if (s.isIfElse())
-                propagateConstantsForIfElse(checkCondition(s), stmtIterator, union(newDeclared, declaredInParent),
-                        usedInParent, s).forEach((k, v) -> {
+                propagateConstantsForIfElse(checkCondition(s, union(newDeclared, declaredInParent)), stmtIterator,
+                        union(newDeclared, declaredInParent), usedInParent, s).forEach((k, v) -> {
                             newDeclared.put(k, new Constant(v.getStatement()));
                         });
             else if (s.isIf()) {
-                Optional<Boolean> checked = checkCondition(s);
+                Optional<Boolean> checked = checkCondition(s, union(newDeclared, declaredInParent));
                 if (checked.isPresent()) {
                     if (!checked.get()) {
                         s.clear();
@@ -132,7 +133,7 @@ public class ConstantsPropagator {
                             newDeclared.put(k, new Constant(v.getStatement()));
                         });
             } else if (s.isLoop()) {
-                Optional<Boolean> checked = checkCondition(s.getLoopCondition());
+                Optional<Boolean> checked = checkCondition(s.getLoopCondition(), union(newDeclared, declaredInParent));
                 if (checked.isPresent()) {
                     if (!checked.get()) { // Omit while block
                         s.clear();
@@ -212,12 +213,14 @@ public class ConstantsPropagator {
         }
     }
 
-    private Optional<Boolean> checkCondition(Statement s) {
+    private Optional<Boolean> checkCondition(Statement s, Map<String, Constant> declared) {
         Operation ifIcmp = s.root.getOperation();
 
         if (ifIcmp.getClass().equals(IfIcmp.class)) {
             Operation firstCondition = s.root.getChildren().get(0).getOperation();
             Operation secondCondition = s.root.getChildren().get(1).getOperation();
+            firstCondition = propagateConditionOperation(firstCondition, declared);
+            secondCondition = propagateConditionOperation(secondCondition, declared);
             if (firstCondition.getClass().equals(IPush.class) && secondCondition.getClass().equals(IPush.class)) {
                 boolean condition = IfIcmp.class.cast(ifIcmp).checkCondition(
                         IPush.class.cast(firstCondition).getIValue(), IPush.class.cast(secondCondition).getIValue());
@@ -225,6 +228,17 @@ public class ConstantsPropagator {
             }
         }
         return Optional.empty();
+    }
+
+    private Operation propagateConditionOperation(Operation condition, Map<String, Constant> declared) {
+        if (condition.getClass().equals(ILoad.class)) {
+            String varName = condition.getDesc().getName();
+            if (declared.containsKey(varName) && declared.get(varName).isConstant()) {
+                return declared.get(varName).getOperation();
+            }
+
+        }
+        return condition;
     }
 
     private void omit(Iterator<Statement> stmtIterator, Statement endStatement) {
