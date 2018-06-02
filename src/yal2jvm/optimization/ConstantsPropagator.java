@@ -38,10 +38,10 @@ public class ConstantsPropagator {
         while (stmtIterator.hasNext()) {
             Statement s = stmtIterator.next();
             setConstant(s.root, declared);
-
+            s.optimize();
             setUsage(s.root, used);
             addDeclarationAndClearPrevious(s, declared, used);
-            s.optimize();
+
             if (s.isIfElse()) {
                 propagateConstantsForIfElse(checkCondition(s), stmtIterator, declared, used, s).forEach((k, v) -> {
                     declared.put(k, new Constant(v.getStatement()));
@@ -98,12 +98,12 @@ public class ConstantsPropagator {
             Statement s = stmtIterator.next();
             // setConstant(s.root, declaredInParent);
             setConstant(s.root, union(declaredInParent, newDeclared));
-
+            s.optimize();
             setUsage(s.root, usedInParent);
             setUsage(s.root, newUsed);
 
             addDeclarationAndClearPrevious(s, newDeclared, newUsed);
-            s.optimize();
+
             if (s.equals(endStatement)) {
                 break;
             }
@@ -200,7 +200,7 @@ public class ConstantsPropagator {
         while (stmtIterator.hasNext()) {
             s = stmtIterator.next();
             Operation rootOperation = s.root.getOperation();
-            if (rootOperation.getClass().equals(AStore.class) || rootOperation.getClass().equals(IStore.class)
+            if (rootOperation.getClass().equals(IStore.class) || rootOperation.getClass().equals(AStore.class)
                     || rootOperation.getClass().equals(IInc.class)) {
                 String name = rootOperation.getDesc().getName();
                 declared.remove(name);
@@ -289,11 +289,17 @@ public class ConstantsPropagator {
          * if not used
          */
         Operation rootOperation = s.root.getOperation();
-        if (rootOperation.getClass().equals(IStore.class) || rootOperation.getClass().equals(AStore.class)) {
+        if (rootOperation.getClass().equals(IStore.class) || rootOperation.getClass().equals(AStore.class)
+                || rootOperation.getClass().equals(IInc.class)) {
             clearDeclaration(rootOperation, declared, used);
             if (s.root.getChildren().size() == 1) {
                 Operation childOperation = s.root.getChildren().get(0).getOperation();
-                if (childOperation.getClass().equals(IPush.class)) {
+                // we can not assign calls, it would result in calling two times
+                // the same function
+                // Get static is also not the best idea <= it would require more
+                // complex analysis and makes no sense (multithreading)
+                if (childOperation.getClass().equals(IPush.class) || childOperation.getClass().equals(ILoad.class)
+                        || childOperation.getClass().equals(ALoad.class)) {
                     declared.put(rootOperation.getDesc().getName(), new Constant(s, childOperation));
                     return;
                 }
