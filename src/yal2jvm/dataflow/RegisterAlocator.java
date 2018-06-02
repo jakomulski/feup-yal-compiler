@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 import yal2jvm.dataflow.algorithms.RegisterAlocationAlgorithm;
 import yal2jvm.dataflow.algorithms.leftedge.LeftEdgeAlgorithm;
@@ -35,13 +34,25 @@ public class RegisterAlocator {
     }
 
     public void optimizedAlocation() {
-        List<VariableDesc> variables = new ArrayList<>();
-        variables.addAll(localVariables);
-        variables.addAll(parameters);
+
         Collection<LivenessTableRow> livenessTable = new LivenessAnalysis(statements).analysise();
-        Map<String, Integer> registersMap = alocationAlgorithm.alocate(
-                parameters.stream().map(v -> v.getName()).collect(Collectors.toList()),
-                localVariables.stream().map(v -> v.getName()).collect(Collectors.toList()), livenessTable);
+
+        List<String> localVariablesNames = new ArrayList<>();
+        List<String> parametersNames = new ArrayList<>();
+
+        parameters.forEach(p -> {
+            if (p.isReturnValue())
+                localVariablesNames.add(p.getName());
+            else
+                parametersNames.add(p.getName());
+        });
+
+        localVariables.forEach(v -> {
+            localVariablesNames.add(v.getName());
+        });
+
+        Map<String, Integer> registersMap = alocationAlgorithm.alocate(parametersNames, localVariablesNames,
+                livenessTable);
         parameters.forEach(v -> {
             String varName = v.getName();
             if (registersMap.containsKey(varName))

@@ -48,6 +48,8 @@ public enum VariableDescFactory {
         private boolean isUsed = true;
         private Operation operation = null;
 
+        private boolean isReturnValue = false;
+
         public VariableDescImpl(VariableDesc variableDesc) {
             name = VariableDescImpl.class.cast(variableDesc).name;
             type = variableDesc.getType();
@@ -145,6 +147,17 @@ public enum VariableDescFactory {
         public void setUsed(boolean used) {
             this.isUsed = used;
 
+        }
+
+        @Override
+        public void markAsReturnValue() {
+            this.isReturnValue = true;
+
+        }
+
+        @Override
+        public boolean isReturnValue() {
+            return isReturnValue;
         }
 
     }

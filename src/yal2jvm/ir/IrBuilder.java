@@ -67,6 +67,8 @@ public class IrBuilder {
 
     private CodeBuilder codeBuilder;
 
+    private VariableDesc returnValue = null;
+
     public IrBuilder(FunctionDesc desc, CodeBuilder codeBuilder) {
         this.functionDesc = desc;
         this.codeBuilder = codeBuilder;
@@ -83,7 +85,16 @@ public class IrBuilder {
         });
 
         if (Constants.OPTIMIZE) {
-            new ConstantsPropagator(statements).propagateConstants();
+            Set<String> globalyUsed = new ConstantsPropagator(statements).propagateConstants();
+            System.out.println("");
+            localVariables.stream().collect(Collectors.toList()).forEach(v -> {
+                if (!globalyUsed.contains(v.getName()))
+                    localVariables.remove(v);
+            });
+            if (returnValue != null && !globalyUsed.contains(returnValue.getName())) {
+                parameters.remove(returnValue);
+            }
+
         }
 
         if (Constants.GENERATE_LOCALS) {
@@ -124,26 +135,33 @@ public class IrBuilder {
     }
 
     public void addVariable(VariableDesc desc) {
-        localVariables.add(desc);
+        if (!localVariables.contains(desc))
+            localVariables.add(desc);
     }
 
     public void addParameter(VariableDesc desc) {
-        parameters.add(desc);
+        if (!parameters.contains(desc))
+            parameters.add(desc);
     }
 
     public void addReturnValue(VariableDesc desc) {
         Statement statement = new Statement();
         statements.add(statement);
+        desc.markAsReturnValue();
         if (desc.getType().equals(VariableType.NULL))
             statement.add(new Return());
         else if (desc.is(VariableType.ARRAY)) {
             statement.add(new AReturn()).add(new ALoad(desc));
-            if (!parameters.contains(desc))
+            if (!parameters.contains(desc)) {
                 parameters.add(desc);
+                this.returnValue = desc;
+            }
         } else {
             statement.add(new IReturn()).add(new ILoad(desc));
-            if (!parameters.contains(desc))
+            if (!parameters.contains(desc)) {
                 parameters.add(desc);
+                this.returnValue = desc;
+            }
         }
     }
 

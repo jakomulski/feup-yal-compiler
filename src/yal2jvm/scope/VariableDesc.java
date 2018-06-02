@@ -37,4 +37,8 @@ public interface VariableDesc {
 
     void setUsed(boolean used);
 
+    void markAsReturnValue();
+
+    boolean isReturnValue();
+
 }

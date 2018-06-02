@@ -30,7 +30,7 @@ public class ConstantsPropagator {
 
     private Set<String> globalyUsed = new HashSet<>();
 
-    public void propagateConstants() {
+    public Set<String> propagateConstants() {
         Map<String, Constant> declared = new HashMap<>();
         Set<String> used = new HashSet<>();
 
@@ -86,6 +86,7 @@ public class ConstantsPropagator {
                 }
             }
         });
+        return globalyUsed;
     }
 
     private Map<String, Constant> propagateConstantsInBlock(Iterator<Statement> stmtIterator, Statement endStatement,
