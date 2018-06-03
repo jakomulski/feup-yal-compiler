@@ -65,14 +65,34 @@ public class Main {
             System.out.println("Running with the optimization");
             break;
         case "-r":
-            Constants.OPTIMIZED_REGISTER_ALOCATION = true;
-            System.out.println("Register alocation with the left edge algorithm");
-            break;
+            if (option.length() > 2) {
+                String sNum = option.substring(3);
+                try {
+                    Constants.NUMBER_OF_REGISTERS = Integer.valueOf(sNum);
+                } catch (Exception e) {
+                    System.out.println("Unknown option: " + option);
+                    return;
+                }
+                System.out.println("Register alocation with " + sNum + " registers");
+                break;
+            } else {
+                Constants.OPTIMIZED_REGISTER_ALOCATION = true;
+                System.out.println("Register alocation with the left edge algorithm");
+                break;
+            }
+        default:
+            System.out.println("Unknown option: " + option);
         }
     }
 
-    public void run(String input) throws FileNotFoundException, ParseException {
-        SimpleNode module = new Yal2jvm(new java.io.FileInputStream(input)).Start();
+    public void run(String input) throws ParseException, FileNotFoundException {
+        SimpleNode module;
+        try {
+            module = new Yal2jvm(new java.io.FileInputStream(input)).Start();
+        } catch (FileNotFoundException e) {
+            System.out.println("file not found: " + input);
+            throw e;
+        }
 
         if (Constants.DUMP)
             Common.dump("", module);
