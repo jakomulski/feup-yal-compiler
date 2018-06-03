@@ -7,12 +7,10 @@ import yal2jvm.ir.Statement;
 
 public class StatementsIterator implements Iterator<Statement> {
 
-    private final List<Statement> statements;
     private Iterator<Statement> iterator;
 
     public StatementsIterator(List<Statement> statements) {
         this.iterator = statements.iterator();
-        this.statements = statements;
     }
 
     @Override

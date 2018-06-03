@@ -41,6 +41,7 @@ public class Main {
         }
     }
 
+    @SuppressWarnings("unused")
     private static void forTest() {
         String input = "./examples_test/test.yal";
         Constants.PRINT_CODE = true;

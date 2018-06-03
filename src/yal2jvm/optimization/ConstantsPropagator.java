@@ -222,17 +222,6 @@ public class ConstantsPropagator {
         return Optional.empty();
     }
 
-    private Operation propagateConditionOperation(Operation condition, Map<String, Constant> declared) {
-        if (condition.getClass().equals(ILoad.class)) {
-            String varName = condition.getDesc().getName();
-            if (declared.containsKey(varName) && declared.get(varName).isConstant()) {
-                return declared.get(varName).getOperation();
-            }
-
-        }
-        return condition;
-    }
-
     private void omit(Iterator<Statement> stmtIterator, Statement endStatement) {
         /**
          * Clear block of statements

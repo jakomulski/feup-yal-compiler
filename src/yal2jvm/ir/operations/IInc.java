@@ -30,7 +30,5 @@ public class IInc extends Operation {
 
     @Override
     public void calculateStackSize(StackSizeCounter stackSizeCounter) {
-        // TODO Auto-generated method stub
-
     }
 }

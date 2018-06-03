@@ -122,12 +122,12 @@ public class Statement implements AddOperation {
         sb.append(prefix + append);
     }
 
-    private void print(String prefix, StringBuilder sb, LowIrNode node) {
-        if (node == null)
-            return;
-        sb.append(prefix + node.toString() + System.lineSeparator());
-        node.getChildren().forEach(ch -> print(prefix + " ", sb, ch));
-    }
+    // private void print(String prefix, StringBuilder sb, LowIrNode node) {
+    // if (node == null)
+    // return;
+    // sb.append(prefix + node.toString() + System.lineSeparator());
+    // node.getChildren().forEach(ch -> print(prefix + " ", sb, ch));
+    // }
 
     public void optimize() {
         optimize(root);
