@@ -217,15 +217,7 @@ public class ConstantsPropagator {
         Operation ifIcmp = s.root.getOperation();
 
         if (ifIcmp.getClass().equals(IfIcmp.class)) {
-            Operation firstCondition = s.root.getChildren().get(0).getOperation();
-            Operation secondCondition = s.root.getChildren().get(1).getOperation();
-            firstCondition = propagateConditionOperation(firstCondition, declared);
-            secondCondition = propagateConditionOperation(secondCondition, declared);
-            if (firstCondition.getClass().equals(IPush.class) && secondCondition.getClass().equals(IPush.class)) {
-                boolean condition = IfIcmp.class.cast(ifIcmp).checkCondition(
-                        IPush.class.cast(firstCondition).getIValue(), IPush.class.cast(secondCondition).getIValue());
-                return Optional.of(condition);
-            }
+            return IfIcmp.class.cast(ifIcmp).checkCondition();
         }
         return Optional.empty();
     }
