@@ -1,0 +1,13 @@
+CHECKPOINT 3 FEEDBACK
+=====================
+Class 1 - Group 34
+
+These notes are based on an analysis of commit 9aed09a5735719dad0b9cacd7dd88bc83f71b151.
+If you believe this is an error, contact your class teacher.
+=====================
+
+High-priority:
+	- Nothing. All tasks for this checkpoint seem to have been completed.
+
+Low-priority:
+	- Nothing.
