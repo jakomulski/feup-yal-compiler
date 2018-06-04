@@ -78,7 +78,6 @@ public class Statement implements AddOperation {
         operation.setContainer(this.root);
         operation.setStatement(this);
         return addNode(root, this);
-        // .add(operation);
     }
 
     public void setType(VariableDesc type) {

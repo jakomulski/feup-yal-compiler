@@ -43,7 +43,7 @@ public class IStore extends Operation {
                 break;
             case "-":
                 container.clearChildren();
-                container.setOperation(new IInc(this.varDesc, getNumNodeValue(numOperation)));
+                container.setOperation(new IInc(this.varDesc, "-" + getNumNodeValue(numOperation)));
                 break;
             }
         }

@@ -51,6 +51,23 @@ public class Main {
         Main main = new Main();
         try {
             main.run(input);
+            System.out.println("------");
+            // Runtime rt = Runtime.getRuntime();
+            // Process pr = rt.exec("cmd.exe /C cd examples_test && java test");
+            //
+            // BufferedReader in = new BufferedReader(new
+            // InputStreamReader(pr.getErrorStream()));
+            // String line = null;
+            // while ((line = in.readLine()) != null) {
+            // System.out.println(line);
+            // }
+            //
+            // in = new BufferedReader(new
+            // InputStreamReader(pr.getInputStream()));
+            // line = null;
+            // while ((line = in.readLine()) != null) {
+            // System.out.println(line);
+            // }
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("");

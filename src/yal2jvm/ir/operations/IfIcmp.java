@@ -108,7 +108,8 @@ public class IfIcmp extends Operation {
 
     @Override
     public void calculateStackSize(StackSizeCounter stackSizeCounter) {
-        stackSizeCounter.pop();
+        if (!hasZero)
+            stackSizeCounter.pop();
         stackSizeCounter.pop();
 
     }

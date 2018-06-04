@@ -35,7 +35,6 @@ public class InvokeStatic extends Operation {
     @Override
     public void optimize() {
         // super.container;
-
     }
 
     @Override

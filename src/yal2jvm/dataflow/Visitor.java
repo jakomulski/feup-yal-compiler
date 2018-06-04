@@ -41,7 +41,18 @@ class Visitor {
 
     @Override
     public String toString() {
-        return this.num + ": " + printVarDescList(this.in) + " " + printVarDescList(this.out);
+        String next = "";
+        String ref = "";
+        if (this.next != null) {
+            next = "next: " + this.next.num;
+        }
+        if (this.ref != null) {
+            ref = "ref: " + this.ref.num;
+        }
+
+        return this.num + ": " + printVarDescList(this.def) + " " + printVarDescList(this.use)
+                + printVarDescList(this.in) + " " + printVarDescList(this.out) + next + " " + ref
+                + System.lineSeparator();
     }
 
     public String printVarDescList(Set<VariableDesc> list) {

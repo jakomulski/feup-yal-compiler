@@ -16,6 +16,7 @@ import yal2jvm.ir.operations.GoTo;
 import yal2jvm.ir.operations.IInc;
 import yal2jvm.ir.operations.ILoad;
 import yal2jvm.ir.operations.IStore;
+import yal2jvm.ir.operations.IfIcmp;
 import yal2jvm.ir.operations.Label;
 import yal2jvm.ir.operations.LowIrNode;
 import yal2jvm.ir.operations.Operation;
@@ -30,6 +31,7 @@ public class LivenessAnalysis {
 
     public List<LivenessTableRow> analysise() {
         Collection<Visitor> visitors = createCFG();
+
         analysieLiveness(visitors);
         return visitors.stream().map(v -> v.convert()).collect(Collectors.toList());
     }
@@ -44,7 +46,7 @@ public class LivenessAnalysis {
         while (stmsVisitor.hasNext()) {
             Statement s = stmsVisitor.next();
             Visitor old = current;
-            if (s.root.getOperation().getClass().equals(GoTo.class)) {
+            if (s.root.getOperation() instanceof GoTo) {
                 Statement sRef = s.getRef();
                 assignRef.push(() -> {
                     old.ref = visitors.get(sRef).next;
@@ -52,6 +54,14 @@ public class LivenessAnalysis {
                 continue;
             }
             current = new Visitor(s);
+            if (s.root.getOperation() instanceof IfIcmp) {
+                Visitor currentFinal = current;
+                Statement sRef = s.getRef();
+                if (sRef != null)
+                    assignRef.push(() -> {
+                        currentFinal.ref = visitors.get(sRef).next;
+                    });
+            }
             visitors.put(s, current);
             if (old != null)
                 old.next = current;

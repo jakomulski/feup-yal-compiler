@@ -38,6 +38,7 @@ public class ConstantsPropagator {
         while (stmtIterator.hasNext()) {
             Statement s = stmtIterator.next();
             setConstant(s.root, declared);
+
             s.optimize();
             setUsage(s.root, used);
             addDeclarationAndClearPrevious(s, declared, used);

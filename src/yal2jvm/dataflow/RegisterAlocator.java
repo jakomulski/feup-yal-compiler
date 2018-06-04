@@ -37,6 +37,8 @@ public class RegisterAlocator {
 
         Collection<LivenessTableRow> livenessTable = new LivenessAnalysis(statements).analysise();
 
+        // System.out.println(livenessTable);
+
         List<String> localVariablesNames = new ArrayList<>();
         List<String> parametersNames = new ArrayList<>();
 

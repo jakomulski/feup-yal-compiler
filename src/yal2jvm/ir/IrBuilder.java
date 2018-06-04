@@ -47,6 +47,7 @@ import yal2jvm.ir.operations.Label;
 import yal2jvm.ir.operations.Ldc;
 import yal2jvm.ir.operations.NewArray;
 import yal2jvm.ir.operations.Operator;
+import yal2jvm.ir.operations.Pop;
 import yal2jvm.ir.operations.PutStatic;
 import yal2jvm.ir.operations.Return;
 import yal2jvm.optimization.ConstantsPropagator;
@@ -221,9 +222,14 @@ public class IrBuilder {
         SimpleNode var = node.jjtGetChild(0);
         String varName = var.getTokenValue();
         if (var.is(JJTARRAYACCESS)) {
+            VariableDesc varDesc = scope.getVariable(varName);
+
             String index = var.jjtGetChild(0).getTokenValue();
             AddOperation addOperation = statement.add(new IAStore());
-            addOperation.add(new ALoad(scope.getVariable(varName)));
+            if (varDesc.isField())
+                addOperation.add(new GetStatic(scope.getModuleName(), scope.getVariable(varName)));
+            else
+                addOperation.add(new ALoad(scope.getVariable(varName)));
             if (Common.isInt(index))
                 addOperation.add(new IPush(index));
             else
@@ -282,9 +288,9 @@ public class IrBuilder {
             VariableDesc arrayDesc = scope.getVariable(name);
             if (arrayDesc.isField())
                 addOperation.add(new GetStatic(scope.getModuleName(), arrayDesc));
-            else
+            else {
                 addOperation.add(new ALoad(arrayDesc));
-
+            }
             if (Common.isInt(index))
                 addOperation.add(new IPush(index));
             else {
@@ -314,6 +320,10 @@ public class IrBuilder {
         }
         String name = node.jjtGetChild(0).getTokenValue();
         FunctionDesc fnDesc = scope.getFunction(name);
+        if ((addOperation instanceof Statement) && !fnDesc.getReturnType().equals(VariableType.NULL)) {
+            // IMPORTANT!!
+            addOperation = addOperation.add(new Pop());
+        }
         loadArguments(scope, node.jjtGetChild(1), addOperation.add(new InvokeStatic(scope.getModuleName(), fnDesc)));
     }
 

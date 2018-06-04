@@ -186,7 +186,7 @@ public class ModuleAnalyzer {
             }
             String name = returnNode.getTokenValue();
             retVar.setName(name);
-            if (functionScope.hasVariable(name)) {
+            if (functionScope.hasVariable(name) && !functionScope.getVariable(name).isField()) {
                 VariableDesc parameterDesc = functionScope.getVariable(name);
                 if (!parameterDesc.is(retVar.getType())) {
                     LOGGER.semanticError(returnNode, "incorrect type");
