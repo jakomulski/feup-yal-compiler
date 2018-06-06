@@ -1,6 +1,7 @@
 package yal2jvm.dataflow;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -17,7 +18,6 @@ import yal2jvm.ir.operations.IInc;
 import yal2jvm.ir.operations.ILoad;
 import yal2jvm.ir.operations.IStore;
 import yal2jvm.ir.operations.IfIcmp;
-import yal2jvm.ir.operations.Label;
 import yal2jvm.ir.operations.LowIrNode;
 import yal2jvm.ir.operations.Operation;
 import yal2jvm.scope.VariableDesc;
@@ -42,6 +42,8 @@ public class LivenessAnalysis {
 
         Stack<Runnable> assignRef = new Stack<>();
 
+        Set<Visitor> ifElses = new HashSet<>();
+
         Iterator<Statement> stmsVisitor = statements.iterator();
         while (stmsVisitor.hasNext()) {
             Statement s = stmsVisitor.next();
@@ -49,7 +51,8 @@ public class LivenessAnalysis {
             if (s.root.getOperation() instanceof GoTo) {
                 Statement sRef = s.getRef();
                 assignRef.push(() -> {
-                    old.ref = visitors.get(sRef).next;
+                    ifElses.add(old);
+                    old.ref = visitors.get(sRef);
                 });
                 continue;
             }
@@ -59,7 +62,7 @@ public class LivenessAnalysis {
                 Statement sRef = s.getRef();
                 if (sRef != null)
                     assignRef.push(() -> {
-                        currentFinal.ref = visitors.get(sRef).next;
+                        currentFinal.ref = visitors.get(sRef);
                     });
             }
             visitors.put(s, current);
@@ -70,16 +73,18 @@ public class LivenessAnalysis {
         while (!assignRef.isEmpty())
             assignRef.pop().run();
 
-        List<Visitor> values = visitors.entrySet().stream()
-                .filter(e -> !e.getKey().root.getOperation().getClass().equals(Label.class)).map(e -> e.getValue())
-                .collect(Collectors.toList());
+        List<Visitor> values = visitors.entrySet().stream().map(e -> e.getValue()).collect(Collectors.toList());
 
         Visitor oldV = null;
 
         int i = 0; // only for testing
         for (Visitor sv : values) {
-            if (oldV != null)
-                oldV.next = sv;
+            if (oldV != null) {
+                if (ifElses.contains(oldV))
+                    oldV.next = null;
+                else
+                    oldV.next = sv;
+            }
             sv.num = i++;
             oldV = sv;
         }

@@ -23,6 +23,9 @@ public class Main {
     }
 
     private static void run(String[] args) {
+        if (args.length == 0)
+            help();
+
         for (String arg : args) {
             if (arg.startsWith("-")) {
                 setOption(arg);
@@ -44,10 +47,12 @@ public class Main {
     @SuppressWarnings("unused")
     private static void forTest() {
         String input = "./examples_test/test.yal";
-        Constants.PRINT_CODE = true;
-        Constants.GENERATE_J = true;
-        Constants.OPTIMIZE = true;
+        Constants.PRINT_CODE = false;
+        Constants.GENERATE_J = false;
+        Constants.OPTIMIZE = false;
         Constants.OPTIMIZED_REGISTER_ALOCATION = true;
+        Constants.REGISTER_ALOCATION_BY_GRAPH_COLORING = true;
+        Constants.NUMBER_OF_REGISTERS = 10;
         Main main = new Main();
         try {
             main.run(input);
@@ -77,29 +82,52 @@ public class Main {
     private static void setOption(String option) {
         String op = option.substring(0, 2);
         switch (op) {
+        case "-h":
+            help();
+            break;
         case "-o":
             Constants.OPTIMIZE = true;
             System.out.println("Running with the optimization");
+            break;
+        case "-d":
+            Constants.DUMP = true;
+            break;
+        case "-p":
+            Constants.PRINT_CODE = true;
             break;
         case "-r":
             if (option.length() > 2) {
                 String sNum = option.substring(3);
                 try {
+                    Constants.OPTIMIZED_REGISTER_ALOCATION = true;
                     Constants.NUMBER_OF_REGISTERS = Integer.valueOf(sNum);
+                    Constants.REGISTER_ALOCATION_BY_GRAPH_COLORING = true;
                 } catch (Exception e) {
                     System.out.println("Unknown option: " + option);
                     return;
                 }
-                System.out.println("Register alocation with " + sNum + " registers");
-                break;
-            } else {
-                Constants.OPTIMIZED_REGISTER_ALOCATION = true;
-                System.out.println("Register alocation with the left edge algorithm");
+                System.out.println("local variables alocation with " + sNum + " registers");
                 break;
             }
         default:
             System.out.println("Unknown option: " + option);
+            System.out.println("Use -h for help");
         }
+    }
+
+    private static void help() {
+        System.out.println("Usage: java -jar yal2jvm [-options] [input...] ");
+        System.out.println("");
+        System.out.println("yal2jvm compiler generates two files: .j and .class");
+        System.out.println("");
+        System.out.println("Options: ");
+        System.out.println(" -o \t\t optimization (constant propagation, constant folding, dead code elimination)");
+        System.out.println(
+                " -r=<num> \t local variables alocation with <num> registers and the graph coloring algorithm");
+        System.out.println("");
+        System.out.println(" -p \t\t print jasmin code ");
+        System.out.println(" -d \t\t dump AST");
+        System.out.println(" -h \t\t help ( this ) ");
     }
 
     public void run(String input) throws ParseException, FileNotFoundException {

@@ -99,7 +99,8 @@ public class IrBuilder {
         }
 
         if (Constants.GENERATE_LOCALS) {
-            RegisterAlocator registerAlocator = new RegisterAlocator(statements, parameters, localVariables);
+            RegisterAlocator registerAlocator = new RegisterAlocator(statements, parameters, localVariables,
+                    functionDesc);
             if (Constants.OPTIMIZED_REGISTER_ALOCATION)
                 registerAlocator.optimizedAlocation();
             else

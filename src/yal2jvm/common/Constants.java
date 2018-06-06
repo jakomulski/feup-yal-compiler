@@ -3,6 +3,7 @@ package yal2jvm.common;
 public class Constants {
     public static boolean GENERATE_LOCALS = true;
     public static boolean OPTIMIZED_REGISTER_ALOCATION = false;
+    public static boolean REGISTER_ALOCATION_BY_GRAPH_COLORING = true;
     public static boolean OPTIMIZE = false;
     public static boolean DUMP = false;
     public static boolean PRINT_CODE = false;
