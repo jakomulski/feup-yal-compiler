@@ -104,7 +104,7 @@ public class Main {
                     Constants.REGISTER_ALOCATION_BY_GRAPH_COLORING = true;
                 } catch (Exception e) {
                     System.out.println("Unknown option: " + option);
-                    return;
+                    System.exit(0);
                 }
                 System.out.println("local variables alocation with " + sNum + " registers");
                 break;
@@ -112,6 +112,7 @@ public class Main {
         default:
             System.out.println("Unknown option: " + option);
             System.out.println("Use -h for help");
+            System.exit(0);
         }
     }
 
