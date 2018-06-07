@@ -28,5 +28,15 @@ Adam Jakomulski
 - dead code removal
 - liveness analysis
 - local variables alocation by graph coloring
-Daniela João- parser- error treatment- code generation - local variables alocation by graph coloring
-Filipe Pinto Reis- parser- error treatment- code generation - local variables alocation by graph coloring
+
+Daniela João
+- parser
+- error treatment
+- code generation 
+- local variables alocation by graph coloring
+
+Filipe Pinto Reis
+- parser
+- error treatment
+- code generation 
+- local variables alocation by graph coloring
