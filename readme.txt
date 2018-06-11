@@ -51,6 +51,8 @@ CODE GENERATION:
 There was no external packages - everything was written from the scratch.
 Code generation was written after deep analisys of how java compiler generates YVM instructions.
 
+The only external packages were jasin package for generating .class file and jgrapht for the register allocation.
+
 
 The most difficult problem:
 Loops and if/elese statements - Labels and goto statements had to be in correct place and nested if/else and loops instructions needed the generic solution.
@@ -92,9 +94,10 @@ Filipe Pinto Reis
 
 
 PROS: (Identify the most positive aspects of your tool)
+ - dead code elimination (works in nested scopes).
+ - constants folding: with the constans propagation and register allocation it can significantly reduse size of generated code.
 
-
-
+ 
 CONS: (Identify the most negative aspects of your tool)
- - no unit tests. The compiler is academic project, so this test was not needes, but
+ - no unit tests. The compiler is academic project, so this tests were not necessary, but
  still - it would save some time during development process. Unit tests are also perfect code descriptions.
